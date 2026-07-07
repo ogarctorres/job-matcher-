@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/.env
+
+# Node / React
+node_modules/
+frontend/dist/
+
+# Banco de dados (se um dia vocês criar)
+*.db

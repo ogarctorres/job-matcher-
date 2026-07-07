@@ -1,0 +1,229 @@
+.pagina {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px 96px;
+}
+
+.cabecalho {
+  width: 100%;
+  max-width: 640px;
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+.cabecalho .rotulo {
+  font-family: var(--fonte-dado);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cor-sinal);
+  margin: 0 0 12px;
+}
+
+.cabecalho h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+
+.cabecalho p {
+  color: var(--cor-texto-fraco);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 46ch;
+}
+
+.zona-upload {
+  width: 100%;
+  max-width: 640px;
+  border: 1px dashed var(--cor-borda);
+  border-radius: 12px;
+  padding: 28px;
+  background-color: var(--cor-superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.campo-arquivo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.campo-arquivo input[type='file'] {
+  color: var(--cor-texto-fraco);
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.campo-arquivo input[type='file']::file-selector-button {
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.arquivo-selecionado {
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  color: var(--cor-sinal);
+  margin: 0;
+}
+
+.botao-buscar {
+  align-self: flex-start;
+  background-color: var(--cor-sinal);
+  color: #062b28;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.botao-buscar:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.botao-buscar:disabled {
+  background-color: var(--cor-sinal-fraco);
+  color: var(--cor-texto-fraco);
+  cursor: not-allowed;
+}
+
+.resultado {
+  width: 100%;
+  max-width: 640px;
+  margin-top: 40px;
+}
+
+.resumo-perfil {
+  border-left: 2px solid var(--cor-sinal);
+  padding: 4px 0 4px 16px;
+  margin-bottom: 40px;
+}
+
+.resumo-perfil .rotulo {
+  font-family: var(--fonte-dado);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cor-texto-fraco);
+  margin: 0 0 8px;
+}
+
+.resumo-perfil p {
+  margin: 0;
+  color: var(--cor-texto);
+  line-height: 1.5;
+}
+
+.lista-vagas h2 {
+  font-size: 13px;
+  font-family: var(--fonte-dado);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cor-texto-fraco);
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+
+.vazio {
+  color: var(--cor-texto-fraco);
+  font-size: 14px;
+  border: 1px dashed var(--cor-borda);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.card-vaga {
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+  padding: 20px 22px;
+  background-color: var(--cor-superficie);
+  margin-bottom: 16px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.card-vaga .conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-vaga h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.card-vaga .empresa {
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  color: var(--cor-texto-fraco);
+  margin: 0 0 12px;
+}
+
+.card-vaga .explicacao {
+  font-size: 14px;
+  color: var(--cor-texto-fraco);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.card-vaga .link-vaga {
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+}
+
+.sinal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 64px;
+}
+
+.sinal .barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 36px;
+}
+
+.sinal .barra {
+  width: 6px;
+  border-radius: 2px;
+  background-color: var(--cor-sinal-fraco);
+}
+
+.sinal .barra.ativa {
+  background-color: var(--cor-sinal);
+}
+
+.sinal .valor {
+  font-family: var(--fonte-dado);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-sinal);
+}
