@@ -7,7 +7,7 @@ com explicação do porquê.
 ## Como funciona
 
 1. Você faz upload do seu currículo (PDF) pela interface web.
-2. O backend extrai o texto do PDF
+2. O backend extrai o texto do PDF.
 4. Uma IA local (rodando via [Ollama](https://ollama.com), sem custo de API)
    analisa o currículo e extrai skills, objetivo de carreira e um resumo do
    perfil.
