@@ -7,16 +7,16 @@ com explicação do porquê.
 ## Como funciona
 
 1. Você faz upload do seu currículo (PDF) pela interface web.
-2. O backend extrai o texto do PDF.
-3. Uma IA local (rodando via [Ollama](https://ollama.com), sem custo de API)
+2. O backend extrai o texto do PDF
+4. Uma IA local (rodando via [Ollama](https://ollama.com), sem custo de API)
    analisa o currículo e extrai skills, objetivo de carreira e um resumo do
    perfil.
-4. O sistema busca vagas reais de estágio em TI na região configurada,
+5. O sistema busca vagas reais de estágio em TI na região configurada,
    usando a [API da Adzuna](https://developer.adzuna.com/).
-5. Para cada vaga encontrada, a IA compara a descrição da vaga com o perfil
+6. Para cada vaga encontrada, a IA compara a descrição da vaga com o perfil
    do candidato e gera um **score de compatibilidade (0-100%)** com uma
    explicação.
-6. Tudo isso é exibido num dashboard, com as vagas mais compatíveis em
+7. Tudo isso é exibido num dashboard, com as vagas mais compatíveis em
    destaque.
 
 ## Stack técnica
