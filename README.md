@@ -1,6 +1,6 @@
 # Job Matcher 🎯
 
-Aplicação full stack que analisa seu currículo em PDF com IA, busca vagas de
+Aplicação full stack que analisa seu currículo em PDF com IA (Ollama), busca vagas de
 estágio em TI reais e calcula o quanto cada vaga combina com o seu perfil —
 com explicação do porquê.
 
