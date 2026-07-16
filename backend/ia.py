@@ -1,7 +1,6 @@
-import json
-
 import ollama
 
+from ia_utils import extrair_json
 
 def analisar_curriculo(texto_curriculo: str) -> dict:
     prompt = f"""
@@ -29,4 +28,4 @@ Currículo:
 
     texto_resposta = resposta["message"]["content"]
 
-    return json.loads(texto_resposta)
+    return extrair_json(texto_resposta)

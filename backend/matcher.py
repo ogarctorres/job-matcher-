@@ -1,6 +1,6 @@
-import json
-
 import ollama
+
+from ia_utils import extrair_json
 
 
 def calcular_compatibilidade(dados_curriculo: dict, vaga: dict) -> dict:
@@ -38,4 +38,4 @@ Descrição: {vaga.get("descricao", "")}
 
     texto_resposta = resposta["message"]["content"]
 
-    return json.loads(texto_resposta)
+    return extrair_json(texto_resposta)
