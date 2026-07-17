@@ -1,6 +1,9 @@
+from pydantic import BaseModel
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+
+import sugestoes
 import curriculo
 import ia
 import avaliador
@@ -8,6 +11,24 @@ import buscador
 import matcher
 
 app = FastAPI()
+
+class SugestaoRequest(BaseModel):
+    dados_curriculo: dict
+    vaga: dict
+
+
+@app.post("/sugestao-vaga")
+async def gerar_sugestao(dados: SugestaoRequest):
+    try:
+        resultado = sugestoes.sugerir_melhorias(dados.dados_curriculo, dados.vaga)
+    except Exception as erro:
+        print(f"[debug] erro na sugestao: {erro}")
+        raise HTTPException(
+            status_code=502,
+            detail="Não foi possível gerar sugestões agora. Tente novamente.",
+        )
+
+    return resultado
 
 app.add_middleware(
     CORSMiddleware,

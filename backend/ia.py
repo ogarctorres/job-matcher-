@@ -1,6 +1,7 @@
 import ollama
 
-from ia_utils import extrair_json
+from ia_utils import extrair_json, chamar_ia_com_retry
+
 
 def analisar_curriculo(texto_curriculo: str) -> dict:
     prompt = f"""
@@ -21,11 +22,12 @@ Currículo:
 {texto_curriculo}
 """
 
-    resposta = ollama.chat(
+    def chamada():
+        resposta = ollama.chat(
         model="llama3.2",
         messages=[{"role": "user", "content": prompt}],
-    )
+        options={"num_predict": 1024, "num_ctx": 8192},
+        )
+        return extrair_json(resposta["message"]["content"])
 
-    texto_resposta = resposta["message"]["content"]
-
-    return extrair_json(texto_resposta)
+    return chamar_ia_com_retry(chamada)

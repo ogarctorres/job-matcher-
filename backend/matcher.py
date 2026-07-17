@@ -1,6 +1,6 @@
 import ollama
 
-from ia_utils import extrair_json
+from ia_utils import extrair_json, chamar_ia_com_retry
 
 
 def calcular_compatibilidade(dados_curriculo: dict, vaga: dict) -> dict:
@@ -28,14 +28,15 @@ Resumo: {dados_curriculo.get("resumo", "")}
 
 VAGA:
 Título: {vaga.get("titulo", "")}
-Descrição: {vaga.get("descricao", "")}
+Descrição: {vaga.get("descricao", "")[:600]}
 """
 
-    resposta = ollama.chat(
+    def chamada():
+        resposta = ollama.chat(
         model="llama3.2",
         messages=[{"role": "user", "content": prompt}],
-    )
+        options={"num_predict": 1024, "num_ctx": 8192},
+        )
+        return extrair_json(resposta["message"]["content"])
 
-    texto_resposta = resposta["message"]["content"]
-
-    return extrair_json(texto_resposta)
+    return chamar_ia_com_retry(chamada)

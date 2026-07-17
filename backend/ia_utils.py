@@ -1,6 +1,6 @@
 import json
 import re
-
+import time
 
 def extrair_json(texto_resposta: str) -> dict:
     """
@@ -30,3 +30,17 @@ def extrair_json(texto_resposta: str) -> dict:
             pass
 
     raise ValueError(f"Não foi possível interpretar a resposta da IA como JSON: {texto[:200]}")
+
+def chamar_ia_com_retry(funcao_chamada, tentativas=3, espera_segundos=2):
+    ultimo_erro = None
+
+    for tentativa in range(1, tentativas + 1):
+        try:
+            return funcao_chamada()
+        except Exception as erro:
+            ultimo_erro = erro
+            print(f"[retry] tentativa {tentativa}/{tentativas} falhou: {erro}")
+            if tentativa < tentativas:
+                time.sleep(espera_segundos)
+
+    raise ValueError(f"Não foi possível interpretar a resposta da IA como JSON: {texto}")

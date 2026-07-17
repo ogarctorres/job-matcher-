@@ -481,3 +481,31 @@
   font-size: 13px;
   margin: 0;
 }
+
+.botao-sugestao {
+  background-color: transparent;
+  color: var(--latao);
+  border: 1px solid var(--latao);
+  border-radius: 3px;
+  padding: 9px 16px;
+  font-family: var(--fonte-corpo);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.botao-sugestao:hover:not(:disabled) {
+  background-color: var(--latao-fundo);
+}
+
+.botao-sugestao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.painel-sugestoes {
+  border-top: 1px solid var(--linha);
+  padding-top: 16px;
+  margin-bottom: 16px;
+}

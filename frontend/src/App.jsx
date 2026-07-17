@@ -218,8 +218,8 @@ function App() {
                 </p>
               )}
 
-              {resultado.vagas_encontradas.map((vaga) => (
-                <CardVaga key={vaga.link} vaga={vaga} />
+            {resultado.vagas_encontradas.map((vaga) => (
+              <CardVaga key={vaga.link} vaga={vaga} dadosCurriculo={resultado.dados_curriculo} />
               ))}
             </div>
           </div>
