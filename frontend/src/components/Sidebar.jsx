@@ -1,72 +1,73 @@
+import {
+  FileText,
+  Award,
+  Briefcase,
+  History,
+  TrendingUp,
+  Settings,
+  Compass,
+} from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 
 function Sidebar() {
   const { telaAtiva, setTelaAtiva, resultado } = useApp()
   const totalVagas = resultado ? resultado.vagas_encontradas.length : 0
 
+  const itensNav = [
+    { id: 'upload', label: 'Novo Currículo', icone: FileText },
+    {
+      id: 'avaliacao',
+      label: 'Avaliação & Raio-X',
+      icone: Award,
+      badge: resultado ? `${resultado.avaliacao.nota_geral}%` : null,
+    },
+    {
+      id: 'vagas',
+      label: 'Vagas Compatíveis',
+      icone: Briefcase,
+      badge: totalVagas > 0 ? totalVagas : null,
+    },
+    { id: 'historico', label: 'Histórico Salvo', icone: History },
+    { id: 'dashboard', label: 'Tendências do Mercado', icone: TrendingUp },
+    { id: 'configuracoes', label: 'Configurações', icone: Settings },
+  ]
+
   return (
     <aside className="sidebar">
       <div className="sidebar-topo">
         <div className="sidebar-logo">
-          <span className="sidebar-logo-icone">◈</span>
+          <div className="sidebar-logo-icone-box">
+            <Compass size={18} strokeWidth={2.4} />
+          </div>
           <span className="sidebar-logo-texto">Job Matcher</span>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        <button
-          className={`sidebar-item ${telaAtiva === 'upload' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('upload')}
-        >
-          <span className="sidebar-item-icone">01</span>
-          Novo currículo
-        </button>
-
-        <button
-          className={`sidebar-item ${telaAtiva === 'avaliacao' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('avaliacao')}
-        >
-          <span className="sidebar-item-icone">02</span>
-          Avaliação
-          {resultado && <span className="sidebar-badge">{resultado.avaliacao.nota_geral}%</span>}
-        </button>
-
-        <button
-          className={`sidebar-item ${telaAtiva === 'vagas' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('vagas')}
-        >
-          <span className="sidebar-item-icone">03</span>
-          Vagas encontradas
-          {totalVagas > 0 && <span className="sidebar-badge">{totalVagas}</span>}
-        </button>
-
-        <button
-          className={`sidebar-item ${telaAtiva === 'historico' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('historico')}
-        >
-          <span className="sidebar-item-icone">04</span>
-          Histórico Salvo
-        </button>
-
-        <button
-          className={`sidebar-item ${telaAtiva === 'dashboard' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('dashboard')}
-        >
-          <span className="sidebar-item-icone">05</span>
-          Tendências TI
-        </button>
-
-        <button
-          className={`sidebar-item ${telaAtiva === 'configuracoes' ? 'ativo' : ''}`}
-          onClick={() => setTelaAtiva('configuracoes')}
-        >
-          <span className="sidebar-item-icone">06</span>
-          Configurações
-        </button>
+        {itensNav.map((item) => {
+          const Icone = item.icone
+          const ativo = telaAtiva === item.id
+          return (
+            <button
+              key={item.id}
+              className={`sidebar-item ${ativo ? 'ativo' : ''}`}
+              onClick={() => setTelaAtiva(item.id)}
+            >
+              <span className="sidebar-item-icone">
+                <Icone size={16} strokeWidth={ativo ? 2.2 : 1.8} />
+              </span>
+              <span>{item.label}</span>
+              {item.badge && <span className="sidebar-badge">{item.badge}</span>}
+            </button>
+          )
+        })}
       </nav>
 
       <div className="sidebar-rodape">
-        <p>Job Matcher v2.0 • Powered by Gemini & SQLite</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
+          <span>v2.0 • Jooble & Gemini</span>
+        </div>
       </div>
     </aside>
   )
