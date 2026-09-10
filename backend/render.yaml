@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: jobmatcher-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: IA_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JOOBLE_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
