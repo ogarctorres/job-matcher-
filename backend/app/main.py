@@ -11,6 +11,7 @@ from app.routes.curriculo import router as curriculo_router
 from app.routes.historico import router as historico_router
 from app.routes.estatisticas import router as estatisticas_router
 from app.routes.carta import router as carta_router
+from app.routes.tendencias import router as tendencias_router
 from app.database import criar_tabelas
 from app.models import Analise  # noqa: F401 — registra modelos no SQLAlchemy
 
@@ -43,6 +44,7 @@ app.include_router(curriculo_router)
 app.include_router(historico_router)
 app.include_router(estatisticas_router)
 app.include_router(carta_router)
+app.include_router(tendencias_router)
 
 
 # Startup
