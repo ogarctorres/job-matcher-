@@ -1,16 +1,32 @@
-# React + Vite
+# Frontend - Job Matcher 💻
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Interface visual reativa desenvolvida com **React 19** e empacotada com **Vite**.
 
-Currently, two official plugins are available:
+## Estrutura de Pastas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+src/
+├── components/          # Telas e componentes reutilizáveis
+│   ├── CardVaga.jsx     # Card de vaga com sintonia e modal de carta
+│   ├── LoadingSkeleton.jsx # Placeholders visuais durante loading
+│   ├── ModalCarta.jsx   # Modal de geração de carta com IA
+│   ├── ScoreGauge.jsx   # Gráfico circular de score
+│   ├── Sidebar.jsx      # Navegação lateral
+│   ├── SkillBadge.jsx   # Badge visual de competência
+│   ├── TelaAvaliacao.jsx# Tela raio-X da pontuação
+│   ├── TelaDashboard.jsx# Métricas e inteligência de mercado
+│   ├── TelaHistorico.jsx# Histórico persistente do SQLite
+│   ├── TelaUpload.jsx   # Upload e envio do PDF
+│   └── TelaVagas.jsx    # Vagas encontradas com filtros
+├── contexts/            # React Context API para estado global
+│   └── AppContext.jsx
+├── services/            # Camada de comunicação HTTP com a API
+│   └── api.js
+├── App.jsx              # Ponto de entrada modular da UI
+└── index.css            # Variáveis globais de cores e tipografia
+```
 
-## React Compiler
+## Scripts Disponíveis
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- `npm run dev`: Inicia o servidor local de desenvolvimento na porta 5173.
+- `npm run build`: Compila os assets minificados e otimizados na pasta `dist/`.
