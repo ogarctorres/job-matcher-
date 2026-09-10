@@ -104,8 +104,8 @@ def chamar_ia(prompt: str, tentativas: int = 3, espera_segundos: int = 2) -> dic
             if tentativa < tentativas:
                 time.sleep(espera_segundos)
 
-    # Tenta o fallback uma vez
-    if fallback:
+    # Tenta fallback apenas se não for chamada cega a localhost em produção
+    if fallback and fallback_nome != "ollama":
         try:
             logger.info(f"[ia_client] Tentando fallback com {fallback_nome}...")
             texto_resposta = fallback(prompt)
