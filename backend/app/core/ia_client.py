@@ -44,13 +44,25 @@ def extrair_json(texto_resposta: str) -> dict:
 
 
 def _chamar_gemini(prompt: str) -> str:
-    """Chama a API do Google Gemini."""
+    """Chama a API do Google Gemini com modelo estável de alta cota."""
+    import os
     import google.generativeai as genai
 
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-3.6-flash")
-    response = model.generate_content(prompt)
-    return response.text
+    chave = GEMINI_API_KEY or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not chave:
+        raise ValueError("Chave de API do Gemini não encontrada.")
+
+    genai.configure(api_key=chave)
+
+    try:
+        model = genai.GenerativeModel("gemini-flash-latest")
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as erro_principal:
+        logger.warning(f"Erro no gemini-flash-latest: {erro_principal}. Tentando gemini-3.5-flash-lite...")
+        model_lite = genai.GenerativeModel("gemini-3.5-flash-lite")
+        response = model_lite.generate_content(prompt)
+        return response.text
 
 
 def _chamar_ollama(prompt: str) -> str:
