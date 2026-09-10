@@ -43,4 +43,4 @@ def chamar_ia_com_retry(funcao_chamada, tentativas=3, espera_segundos=2):
             if tentativa < tentativas:
                 time.sleep(espera_segundos)
 
-    raise ValueError(f"Não foi possível interpretar a resposta da IA como JSON: {texto}")
+    raise ValueError(f"Falha após {tentativas} tentativas. Último erro: {ultimo_erro}")
