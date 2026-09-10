@@ -6,9 +6,9 @@ import {
   History,
   TrendingUp,
   Settings,
-  Compass,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
+import LogoVektor from './LogoVektor'
 
 function Header() {
   const { telaAtiva, setTelaAtiva, resultado } = useApp()
@@ -42,12 +42,9 @@ function Header() {
   return (
     <header className="app-header">
       <div className="app-header-conteudo">
-        {/* Logo */}
+        {/* Logo Vektor Oficial */}
         <div className="header-logo" onClick={() => setTelaAtiva('upload')} style={{ cursor: 'pointer' }}>
-          <div className="sidebar-logo-icone-box">
-            <Compass size={18} strokeWidth={2.4} />
-          </div>
-          <span className="sidebar-logo-texto">Job Matcher</span>
+          <LogoVektor tamanho={26} />
         </div>
 
         {/* Menu Horizontal de Navegação */}
