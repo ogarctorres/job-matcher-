@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { TrendingUp, BarChart3, Target, Briefcase, RefreshCw } from 'lucide-react'
 import { api } from '../services/api'
 
 function TelaDashboard() {
@@ -8,84 +9,118 @@ function TelaDashboard() {
   const [erro, setErro] = useState(null)
 
   useEffect(() => {
-    async function carregarDados() {
-      setCarregando(true)
-      try {
-        const [resStats, resTendencias] = await Promise.all([
-          api.obterEstatisticas(),
-          api.obterTendencias('estagio ti'),
-        ])
-        setStats(resStats)
-        setTendencias(resTendencias)
-      } catch (e) {
-        setErro(e.message)
-      } finally {
-        setCarregando(false)
-      }
-    }
     carregarDados()
   }, [])
+
+  async function carregarDados() {
+    setCarregando(true)
+    setErro(null)
+    try {
+      const [resStats, resTendencias] = await Promise.all([
+        api.obterEstatisticas(),
+        api.obterTendencias('estagio ti'),
+      ])
+      setStats(resStats)
+      setTendencias(resTendencias)
+    } catch (e) {
+      setErro(e.message)
+    } finally {
+      setCarregando(false)
+    }
+  }
 
   return (
     <div className="tela">
       <header className="tela-cabecalho">
-        <p className="rotulo">Inteligência de Mercado</p>
-        <h1>Dashboard & Tendências</h1>
-        <p className="tela-descricao">
-          Métricas calculadas sobre suas análises de currículo cruzadas com as habilidades mais exigidas pelas vagas abertas no mercado brasileiro.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <span className="rotulo">Inteligência de Mercado</span>
+            <h1>Tendências & Demandas do Setor</h1>
+            <p className="tela-descricao">
+              Estatísticas consolidadas das suas análises combinadas com mineração em tempo real das vagas de tecnologia abertas no Brasil.
+            </p>
+          </div>
+          <button
+            className="botao-secundario"
+            onClick={carregarDados}
+            disabled={carregando}
+            style={{ fontSize: '12.5px', padding: '7px 14px' }}
+          >
+            <RefreshCw size={14} className={carregando ? 'animar-spin' : ''} style={carregando ? { animation: 'spin 1s linear infinite' } : {}} />
+            <span>Atualizar Dados</span>
+          </button>
+        </div>
       </header>
 
-      {carregando && <p style={{ color: 'var(--tinta-suave)' }}>Processando estatísticas e mineração de vagas...</p>}
-      {erro && <p className="mensagem-erro">{erro}</p>}
+      {erro && <div className="mensagem-erro" style={{ marginBottom: '24px' }}>{erro}</div>}
 
+      {/* Grid de Métricas Principais */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-          <div style={{ padding: '18px', border: '1px solid var(--linha)', backgroundColor: 'var(--papel)', borderRadius: '4px' }}>
-            <span className="rotulo-pequeno">Total de Análises</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '28px', fontFamily: 'var(--fonte-dado)', color: 'var(--latao)' }}>
-              {stats.total_analises}
-            </h2>
+        <div className="dashboard-grid-metricas">
+          <div className="card-metrica">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="card-metrica-rotulo">Currículos Avaliados</span>
+              <Target size={18} color="var(--accent)" />
+            </div>
+            <span className="card-metrica-valor">{stats.total_analises}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Registrados no banco SQLite</span>
           </div>
 
-          <div style={{ padding: '18px', border: '1px solid var(--linha)', backgroundColor: 'var(--papel)', borderRadius: '4px' }}>
-            <span className="rotulo-pequeno">Média de Nota</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '28px', fontFamily: 'var(--fonte-dado)', color: 'var(--latao)' }}>
-              {stats.nota_media}%
-            </h2>
+          <div className="card-metrica">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="card-metrica-rotulo">Score Médio Geral</span>
+              <BarChart3 size={18} color="var(--success)" />
+            </div>
+            <span className="card-metrica-valor">{stats.nota_media}%</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Média ponderada do perfil</span>
           </div>
 
-          <div style={{ padding: '18px', border: '1px solid var(--linha)', backgroundColor: 'var(--papel)', borderRadius: '4px' }}>
-            <span className="rotulo-pequeno">Vagas Analisadas</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '28px', fontFamily: 'var(--fonte-dado)', color: 'var(--tinta)' }}>
-              {tendencias ? tendencias.total_vagas_analisadas : 0}
-            </h2>
+          <div className="card-metrica">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="card-metrica-rotulo">Vagas Monitoradas</span>
+              <Briefcase size={18} color="var(--warning)" />
+            </div>
+            <span className="card-metrica-valor">{tendencias?.total_vagas_analisadas || 0}</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Anúncios recentes analisados</span>
           </div>
         </div>
       )}
 
-      {tendencias && tendencias.top_skills_em_alta && (
-        <div style={{ marginTop: '24px' }}>
-          <h2 style={{ fontSize: '20px', fontFamily: 'var(--fonte-titulo)', marginBottom: '16px' }}>
-            🔥 Skills Mais Demandadas em Estágio de TI
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Gráfico de Habilidades em Alta */}
+      {tendencias?.top_skills_em_alta && (
+        <div
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-card)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '28px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+            <TrendingUp size={18} color="var(--accent)" />
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Skills Mais Requisitadas nos Anúncios de Estágio
+            </h2>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {tendencias.top_skills_em_alta.map((item, idx) => (
-              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ width: '110px', fontSize: '13px', fontFamily: 'var(--fonte-dado)', textTransform: 'capitalize' }}>
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ width: '130px', fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 500, textTransform: 'capitalize', color: 'var(--text-primary)' }}>
                   {item.skill}
                 </span>
-                <div style={{ flex: 1, height: '8px', backgroundColor: 'var(--linha)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: '8px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                   <div
                     style={{
                       width: `${item.porcentagem}%`,
                       height: '100%',
-                      backgroundColor: 'var(--latao)',
-                      borderRadius: '4px',
+                      background: 'linear-gradient(90deg, var(--accent), #60a5fa)',
+                      borderRadius: 'var(--radius-full)',
+                      transition: 'width 0.4s ease',
                     }}
                   />
                 </div>
-                <span style={{ width: '50px', textAlign: 'right', fontSize: '12px', fontFamily: 'var(--fonte-dado)', color: 'var(--tinta-suave)' }}>
+                <span style={{ width: '60px', textAlign: 'right', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
                   {item.porcentagem}%
                 </span>
               </div>

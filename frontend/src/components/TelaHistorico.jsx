@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { Calendar, Briefcase, Trash2, ArrowRight, History } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
+import SkillBadge from './SkillBadge'
 
 function TelaHistorico() {
   const { setResultado, setTelaAtiva } = useApp()
@@ -37,7 +39,7 @@ function TelaHistorico() {
 
   async function deletar(e, id) {
     e.stopPropagation()
-    if (!confirm('Deseja realmente excluir esta análise do histórico?')) return
+    if (!window.confirm('Tem certeza que deseja remover esta análise do histórico?')) return
     try {
       await api.deletarAnalise(id)
       setLista((prev) => prev.filter((item) => item.id !== id))
@@ -49,92 +51,100 @@ function TelaHistorico() {
   return (
     <div className="tela">
       <header className="tela-cabecalho">
-        <p className="rotulo">Histórico Salvo</p>
-        <h1>Análises Anteriores</h1>
+        <span className="rotulo">Registro Permanente</span>
+        <h1>Histórico de Avaliações</h1>
         <p className="tela-descricao">
-          Todas as análises de currículos processadas são armazenadas com SQLite para você acompanhar sua evolução.
+          Todas as análises processadas ficam salvas localmente no banco de dados SQLite para você acompanhar seu progresso.
         </p>
       </header>
 
-      {carregando && <p style={{ color: 'var(--tinta-suave)' }}>Carregando histórico do banco...</p>}
-      {erro && <p className="mensagem-erro">{erro}</p>}
+      {carregando && <p style={{ color: 'var(--text-muted)' }}>Carregando histórico do banco...</p>}
+      {erro && <div className="mensagem-erro" style={{ marginBottom: '20px' }}>{erro}</div>}
 
       {!carregando && lista.length === 0 && (
         <div className="estado-vazio">
-          <h2>Nenhuma análise salva ainda</h2>
-          <p>Faça o upload do seu currículo em PDF para registrar sua primeira análise.</p>
-          <button className="botao-secundario" onClick={() => setTelaAtiva('upload')}>
-            Novo currículo
+          <div className="estado-vazio-icone-box">
+            <History size={24} />
+          </div>
+          <h2>Nenhum histórico registrado ainda</h2>
+          <p>Envie seu currículo pela primeira vez para começar a construir seu histórico de evolução.</p>
+          <button className="botao-primario" onClick={() => setTelaAtiva('upload')}>
+            Novo Currículo
           </button>
         </div>
       )}
 
-      <div className="lista-historico" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {lista.map((item) => (
           <div
             key={item.id}
             onClick={() => abrirAnalise(item.id)}
             style={{
-              padding: '18px 22px',
-              border: '1px solid var(--linha)',
-              borderRadius: '4px',
-              backgroundColor: 'var(--papel)',
+              padding: '20px 24px',
+              border: '1px solid var(--border-card)',
+              borderRadius: 'var(--radius-lg)',
+              backgroundColor: 'var(--bg-card)',
               cursor: 'pointer',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              transition: 'border-color 0.2s',
+              transition: 'var(--transition)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-focus)'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-card)'
+              e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                <span className="rotulo-pequeno" style={{ margin: 0 }}>
-                  {item.criado_em ? new Date(item.criado_em).toLocaleDateString('pt-BR') : 'Data não informada'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <Calendar size={13} />
+                  {item.criado_em ? new Date(item.criado_em).toLocaleDateString('pt-BR') : 'Data recente'}
                 </span>
-                <span className="sidebar-badge">{item.total_vagas} vagas</span>
+                <span className="sidebar-badge" style={{ fontSize: '10.5px' }}>
+                  {item.total_vagas} vagas encontradas
+                </span>
               </div>
-              <h3 style={{ margin: '0 0 6px', fontSize: '17px', fontFamily: 'var(--fonte-titulo)' }}>
-                {item.cargo_objetivo || 'Perfil de TI / Dados'}
+
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                {item.cargo_objetivo || 'Perfil de Tecnologia / TI'}
               </h3>
+
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {item.skills.slice(0, 5).map((skill, idx) => (
-                  <span
-                    key={idx}
-                    style={{
-                      fontSize: '11px',
-                      fontFamily: 'var(--fonte-dado)',
-                      backgroundColor: 'var(--latao-fundo)',
-                      color: 'var(--latao)',
-                      padding: '2px 6px',
-                      borderRadius: '3px',
-                    }}
-                  >
-                    {skill}
-                  </span>
+                {item.skills?.slice(0, 6).map((skill, idx) => (
+                  <SkillBadge key={idx} skill={skill} />
                 ))}
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ textAlign: 'right' }}>
-                <span className="rotulo-pequeno" style={{ display: 'block' }}>Score</span>
-                <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--latao)', fontFamily: 'var(--fonte-dado)' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block' }}>
+                  Score Geral
+                </span>
+                <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
                   {item.nota_geral}%
                 </span>
               </div>
+
               <button
                 onClick={(e) => deletar(e, item.id)}
-                title="Excluir"
+                title="Excluir do histórico"
                 style={{
                   background: 'none',
                   border: 'none',
+                  color: 'var(--text-muted)',
                   cursor: 'pointer',
-                  color: 'var(--tinta-suave)',
-                  fontSize: '16px',
                   padding: '6px',
+                  display: 'flex',
+                  borderRadius: 'var(--radius-sm)',
                 }}
               >
-                🗑️
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
