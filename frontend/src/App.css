@@ -2,19 +2,113 @@
    JOB MATCHER — DESIGN SYSTEM SAAS MODERNO
    ========================================================================== */
 
-/* ---------- Layout Geral ---------- */
-.app-layout {
+/* ---------- Layout Geral com Header Superior ---------- */
+.app-layout-superior {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--bg-app);
 }
 
 .conteudo-principal {
   flex: 1;
-  padding: 40px 48px;
-  max-width: 960px;
+  padding: 40px 24px;
+  max-width: 1120px;
   margin: 0 auto;
   width: 100%;
+}
+
+/* ---------- Header Superior (Navbar Moderna) ---------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(11, 16, 27, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-header-conteudo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.header-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.header-nav-item:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface-subtle);
+}
+
+.header-nav-item.ativo {
+  color: #fff;
+  background-color: var(--bg-surface);
+  border-color: var(--border-card);
+  font-weight: 600;
+}
+
+.header-nav-item.item-destaque {
+  color: #93c5fd;
+}
+
+.header-nav-item.item-destaque:hover {
+  color: #bfdbfe;
+}
+
+.header-badge {
+  background-color: var(--accent-subtle);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--accent-border);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  white-space: nowrap;
 }
 
 .tela {
