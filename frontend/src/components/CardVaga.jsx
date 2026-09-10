@@ -1,27 +1,19 @@
 import { useState } from 'react'
+import { api } from '../services/api'
+import ModalCarta from './ModalCarta'
 
 function CardVaga({ vaga, dadosCurriculo }) {
   const [sugestoes, setSugestoes] = useState(null)
   const [carregandoSugestao, setCarregandoSugestao] = useState(false)
   const [erroSugestao, setErroSugestao] = useState(null)
+  const [modalCartaAberto, setModalCartaAberto] = useState(false)
 
   async function buscarSugestoes() {
     setCarregandoSugestao(true)
     setErroSugestao(null)
 
     try {
-      const resposta = await fetch('http://127.0.0.1:8000/sugestao-vaga', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dados_curriculo: dadosCurriculo, vaga }),
-      })
-
-      if (!resposta.ok) {
-        const erroDados = await resposta.json()
-        throw new Error(erroDados.detail || 'Não foi possível gerar sugestões.')
-      }
-
-      const dados = await resposta.json()
+      const dados = await api.gerarSugestao(dadosCurriculo, vaga)
       setSugestoes(dados.sugestoes)
     } catch (falha) {
       setErroSugestao(falha.message)
@@ -49,18 +41,30 @@ function CardVaga({ vaga, dadosCurriculo }) {
       </div>
 
       <h3>{vaga.titulo}</h3>
-      <p className="empresa">{vaga.empresa}</p>
+      <p className="empresa">
+        {vaga.empresa} {vaga.localizacao ? `• ${vaga.localizacao}` : ''}
+      </p>
       <p className="explicacao">{vaga.explicacao_score}</p>
 
-      {!sugestoes && (
+      <div className="acoes-card" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+        {!sugestoes && (
+          <button
+            className="botao-sugestao"
+            onClick={buscarSugestoes}
+            disabled={carregandoSugestao}
+          >
+            {carregandoSugestao ? 'Analisando...' : 'Dicas de melhoria'}
+          </button>
+        )}
+
         <button
           className="botao-sugestao"
-          onClick={buscarSugestoes}
-          disabled={carregandoSugestao}
+          style={{ borderColor: 'var(--tinta-suave)', color: 'var(--tinta)' }}
+          onClick={() => setModalCartaAberto(true)}
         >
-          {carregandoSugestao ? 'Analisando...' : 'Como melhorar meu currículo para essa vaga'}
+          ✉️ Gerar Carta de Apresentação
         </button>
-      )}
+      </div>
 
       {erroSugestao && <p className="mensagem-erro">{erroSugestao}</p>}
 
@@ -75,9 +79,19 @@ function CardVaga({ vaga, dadosCurriculo }) {
         </div>
       )}
 
-      <a className="link-vaga" href={vaga.link} target="_blank" rel="noreferrer">
-        Ver vaga →
-      </a>
+      {vaga.link && (
+        <a className="link-vaga" href={vaga.link} target="_blank" rel="noreferrer">
+          Ver vaga oficial →
+        </a>
+      )}
+
+      {modalCartaAberto && (
+        <ModalCarta
+          vaga={vaga}
+          dadosCurriculo={dadosCurriculo}
+          onFechar={() => setModalCartaAberto(false)}
+        />
+      )}
     </div>
   )
 }
