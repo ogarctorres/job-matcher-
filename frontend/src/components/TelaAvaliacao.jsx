@@ -1,4 +1,6 @@
+import { CheckCircle2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
+import ScoreGauge from './ScoreGauge'
 
 function TelaAvaliacao() {
   const { resultado, setTelaAtiva } = useApp()
@@ -7,73 +9,158 @@ function TelaAvaliacao() {
     return (
       <div className="tela">
         <div className="estado-vazio">
-          <p className="estado-vazio-icone">Aguardando</p>
-          <h2>Nenhuma avaliação ainda</h2>
-          <p>Envie um currículo para receber a avaliação da IA aqui.</p>
-          <button className="botao-secundario" onClick={() => setTelaAtiva('upload')}>
-            Ir para upload
+          <div className="estado-vazio-icone-box">
+            <Sparkles size={24} />
+          </div>
+          <h2>Nenhuma análise disponível</h2>
+          <p>Faça o upload do seu currículo para gerar o diagnóstico de compatibilidade.</p>
+          <button className="botao-primario" onClick={() => setTelaAtiva('upload')}>
+            Enviar Currículo
           </button>
         </div>
       </div>
     )
   }
 
-  const { avaliacao } = resultado
+  const { avaliacao, vagas_encontradas } = resultado
 
   return (
     <div className="tela">
       <header className="tela-cabecalho">
-        <p className="rotulo">Avaliação do currículo</p>
-        <h1>Raio-X do seu perfil</h1>
+        <span className="rotulo">Diagnóstico Concluído</span>
+        <h1>Raio-X do seu Perfil Técnico</h1>
+        <p className="tela-descricao">
+          Avaliação baseada nos padrões de contratação para posições de entrada e estágio em tecnologia.
+        </p>
       </header>
 
-      <div className="dial dial-grande">
-        <div className="dial-topo">
-          <span className="dial-rotulo">Nota geral calculada por IA</span>
-          <span className="dial-valor">{avaliacao.nota_geral}%</span>
+      {/* Card Principal de Pontuação */}
+      <div
+        style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-card)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '28px 32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '24px',
+          flexWrap: 'wrap',
+          marginBottom: '28px',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '260px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Nível Geral de Aderência
+          </span>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '6px 0 10px', color: 'var(--text-primary)' }}>
+            {avaliacao.nota_geral >= 75 ? 'Excelente Potencial para Estágio' : avaliacao.nota_geral >= 50 ? 'Bom Perfil em Desenvolvimento' : 'Perfil Inicial / Requer Projetos'}
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6' }}>
+            {avaliacao.comentario_geral}
+          </p>
         </div>
-        <div className="dial-trilho">
-          <div
-            className="dial-preenchido"
-            style={{ width: `${avaliacao.nota_geral}%` }}
-          />
-          <div
-            className="dial-agulha"
-            style={{ left: `${avaliacao.nota_geral}%` }}
-          />
-        </div>
-        <div className="dial-escala">
-          <span>0</span>
-          <span>50</span>
-          <span>100</span>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <ScoreGauge score={avaliacao.nota_geral} tamanho={88} />
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', fontFamily: 'var(--font-mono)' }}>
+            Nota do Recrutador
+          </span>
         </div>
       </div>
 
-      <p className="comentario-geral">{avaliacao.comentario_geral}</p>
-
-      <div className="colunas-avaliacao">
-        <div className="coluna-avaliacao">
-          <p className="rotulo-pequeno">Pontos fortes</p>
-          <ul className="lista-avaliacao lista-forte">
-            {avaliacao.pontos_fortes.map((ponto, indice) => (
-              <li key={indice}>{ponto}</li>
+      {/* Grid de Pontos Fortes e Melhorias */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+        {/* Pontos Fortes */}
+        <div
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-card)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '24px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <CheckCircle2 size={18} color="var(--success)" />
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>Pontos Fortes Identificados</h3>
+          </div>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {avaliacao.pontos_fortes.map((item, idx) => (
+              <li
+                key={idx}
+                style={{
+                  fontSize: '13.5px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.5',
+                  paddingLeft: '14px',
+                  position: 'relative',
+                }}
+              >
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '8px',
+                    width: '5px',
+                    height: '5px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--success)',
+                  }}
+                />
+                {item}
+              </li>
             ))}
           </ul>
         </div>
 
-        <div className="coluna-avaliacao">
-          <p className="rotulo-pequeno">Pontos de melhoria</p>
-          <ul className="lista-avaliacao lista-melhoria">
-            {avaliacao.pontos_melhoria.map((ponto, indice) => (
-              <li key={indice}>{ponto}</li>
+        {/* Pontos de Melhoria */}
+        <div
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-card)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '24px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <AlertCircle size={18} color="var(--warning)" />
+            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>Oportunidades de Evolução</h3>
+          </div>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {avaliacao.pontos_melhoria.map((item, idx) => (
+              <li
+                key={idx}
+                style={{
+                  fontSize: '13.5px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.5',
+                  paddingLeft: '14px',
+                  position: 'relative',
+                }}
+              >
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '8px',
+                    width: '5px',
+                    height: '5px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--warning)',
+                  }}
+                />
+                {item}
+              </li>
             ))}
           </ul>
         </div>
       </div>
 
-      <div style={{ marginTop: '36px' }}>
-        <button className="botao-buscar" onClick={() => setTelaAtiva('vagas')}>
-          Ver vagas compatíveis ({resultado.vagas_encontradas.length}) →
+      {/* Ação para ver vagas */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button className="botao-primario" onClick={() => setTelaAtiva('vagas')}>
+          <span>Explorar Vagas Compatíveis ({vagas_encontradas?.length || 0})</span>
+          <ArrowRight size={16} />
         </button>
       </div>
     </div>
