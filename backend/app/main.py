@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import CORS_ORIGINS, validar_config
 from app.routes.curriculo import router as curriculo_router
+from app.database import criar_tabelas
+from app.models import Analise  # noqa: F401 — registra modelos no SQLAlchemy
 
 # Configurar logging
 logging.basicConfig(
@@ -35,6 +37,13 @@ app.add_middleware(
 
 # Rotas
 app.include_router(curriculo_router)
+
+
+# Startup
+@app.on_event("startup")
+def startup():
+    criar_tabelas()
+    logging.getLogger(__name__).info("Banco de dados inicializado ✅")
 
 
 @app.get("/")
