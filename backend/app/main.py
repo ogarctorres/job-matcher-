@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import CORS_ORIGINS, validar_config
+from app.core.constantes import VERSAO_SISTEMA
 from app.routes.curriculo import router as curriculo_router
 from app.routes.historico import router as historico_router
 from app.routes.estatisticas import router as estatisticas_router
@@ -29,7 +30,7 @@ validar_config()
 app = FastAPI(
     title="Job Matcher API",
     description="Analisa currículos com IA e encontra vagas compatíveis.",
-    version="2.0.0",
+    version=VERSAO_SISTEMA,
 )
 
 # CORS
