@@ -4,6 +4,7 @@ import TelaAvaliacao from './components/TelaAvaliacao'
 import TelaVagas from './components/TelaVagas'
 import TelaHistorico from './components/TelaHistorico'
 import TelaDashboard from './components/TelaDashboard'
+import TelaConfiguracoes from './components/TelaConfiguracoes'
 import { AppProvider, useApp } from './contexts/AppContext'
 import './App.css'
 
@@ -19,6 +20,7 @@ function ConteudoPrincipal() {
         {telaAtiva === 'vagas' && <TelaVagas />}
         {telaAtiva === 'historico' && <TelaHistorico />}
         {telaAtiva === 'dashboard' && <TelaDashboard />}
+        {telaAtiva === 'configuracoes' && <TelaConfiguracoes />}
       </main>
     </div>
   )

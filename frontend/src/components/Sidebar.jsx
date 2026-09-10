@@ -55,6 +55,14 @@ function Sidebar() {
           <span className="sidebar-item-icone">05</span>
           Tendências TI
         </button>
+
+        <button
+          className={`sidebar-item ${telaAtiva === 'configuracoes' ? 'ativo' : ''}`}
+          onClick={() => setTelaAtiva('configuracoes')}
+        >
+          <span className="sidebar-item-icone">06</span>
+          Configurações
+        </button>
       </nav>
 
       <div className="sidebar-rodape">
