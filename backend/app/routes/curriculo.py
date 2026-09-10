@@ -84,17 +84,17 @@ async def enviar_curriculo(arquivo: UploadFile):
         logger.warning(f"Erro na busca de vagas: {erro}")
         vagas_encontradas = []
 
-    # Calcular compatibilidade
-    for vaga in vagas_encontradas:
+    # Calcular compatibilidade em LOTE (1 única chamada rápida ao invés de loop N+1)
+    if vagas_encontradas:
         try:
-            compatibilidade = matcher.calcular_compatibilidade(dados_estruturados, vaga)
-            vaga["score"] = compatibilidade.get("score", 0)
-            vaga["explicacao_score"] = compatibilidade.get("explicacao", "")
-        except Exception:
-            vaga["score"] = 0
-            vaga["explicacao_score"] = "Não foi possível calcular a compatibilidade."
+            vagas_encontradas = matcher.calcular_compatibilidade_lote(dados_estruturados, vagas_encontradas)
+        except Exception as erro:
+            logger.warning(f"Erro no matching em lote: {erro}")
+            for vaga in vagas_encontradas:
+                vaga["score"] = 50
+                vaga["explicacao_score"] = "Compatibilidade estimada para estágio."
 
-    vagas_encontradas.sort(key=lambda v: v["score"], reverse=True)
+    vagas_encontradas.sort(key=lambda v: v.get("score", 0), reverse=True)
 
     # Salvar no banco
     try:
