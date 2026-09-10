@@ -2,10 +2,13 @@
  * Cliente HTTP centralizado para consumo da API do Job Matcher.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+// Remove qualquer barra no final para evitar //curriculo (que gera 404 Not Found)
+const API_BASE_URL = rawApiUrl.replace(/\/+$/, '')
 
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`
+  const caminhoLimpo = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  const url = `${API_BASE_URL}${caminhoLimpo}`
   const headers = options.headers || {}
 
   if (!(options.body instanceof FormData) && !headers['Content-Type']) {
