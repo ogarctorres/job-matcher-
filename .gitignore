@@ -1,12 +1,27 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
 .venv/
-backend/.env
+*.egg-info/
+
+# Ambiente
+.env
+.env.*
+!.env.example
 
 # Node / React
 node_modules/
 frontend/dist/
 
-# Banco de dados (se um dia vocês criar)
+# Banco de dados
 *.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
