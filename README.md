@@ -1,8 +1,12 @@
-# Job Matcher 🎯
+<p align="center">
+  <img src="frontend/public/logo-vektor.jpg" alt="Vektor Logo" width="380" style="border-radius: 12px;" />
+</p>
 
-> **Plataforma de Inteligência de Carreira com IA e Dados para Estudantes de Tecnologia**
+# Vektor ⚡
 
-O **Job Matcher** é uma aplicação Full Stack que utiliza Inteligência Artificial generativa (Google Gemini) e engenharia de dados para analisar currículos em PDF, comparar competências com vagas reais de estágio no mercado brasileiro (via Jooble API) e gerar métricas, cartas de apresentação e recomendações personalizadas.
+> **Plataforma de Inteligência de Carreira com IA e Dados para Estudantes e Profissionais de Tecnologia**
+
+O **Vektor** é uma aplicação Full Stack que utiliza Inteligência Artificial generativa (Google Gemini 3.6 Flash) e engenharia de dados para analisar currículos em PDF, comparar competências com vagas reais de estágio no mercado brasileiro (via Jooble API) e gerar métricas, cartas de apresentação e reescrita de currículo otimizada para ATS.
 
 ---
 

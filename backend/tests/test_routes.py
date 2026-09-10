@@ -6,7 +6,7 @@ client = TestClient(app)
 def test_rota_raiz():
     response = client.get("/")
     assert response.status_code == 200
-    assert "Job Matcher" in response.json()["mensagem"]
+    assert "Vektor" in response.json()["mensagem"]
 
 def test_rota_health():
     response = client.get("/health")

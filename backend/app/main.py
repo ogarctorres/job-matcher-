@@ -29,8 +29,8 @@ validar_config()
 
 # Criar app
 app = FastAPI(
-    title="Job Matcher API",
-    description="Analisa currículos com IA e encontra vagas compatíveis.",
+    title="Vektor API",
+    description="Plataforma de Inteligência de Vagas e Carreira com IA.",
     version=VERSAO_SISTEMA,
 )
 
@@ -61,4 +61,4 @@ def startup():
 
 @app.get("/")
 def raiz():
-    return {"mensagem": "Job Matcher API v2.0 rodando! 🚀"}
+    return {"mensagem": "Vektor API v2.0 rodando! 🚀"}
