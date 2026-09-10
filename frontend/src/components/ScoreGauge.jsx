@@ -1,11 +1,18 @@
-function ScoreGauge({ score, tamanho = 72 }) {
-  const raio = 28
+function ScoreGauge({ score = 0, tamanho = 72 }) {
+  const raio = 26
   const circunferencia = 2 * Math.PI * raio
-  const offset = circunferencia - ((score || 0) / 100) * circunferencia
+  const porcentagem = Math.min(Math.max(score, 0), 100)
+  const offset = circunferencia - (porcentagem / 100) * circunferencia
+
+  let corAcento = 'var(--danger)'
+  if (porcentagem >= 70) {
+    corAcento = 'var(--success)'
+  } else if (porcentagem >= 40) {
+    corAcento = 'var(--warning)'
+  }
 
   return (
     <div
-      className="score-gauge"
       style={{
         position: 'relative',
         width: tamanho,
@@ -20,7 +27,7 @@ function ScoreGauge({ score, tamanho = 72 }) {
           cx={tamanho / 2}
           cy={tamanho / 2}
           r={raio}
-          stroke="var(--linha)"
+          stroke="var(--bg-surface)"
           strokeWidth="5"
           fill="transparent"
         />
@@ -28,25 +35,25 @@ function ScoreGauge({ score, tamanho = 72 }) {
           cx={tamanho / 2}
           cy={tamanho / 2}
           r={raio}
-          stroke="var(--latao)"
+          stroke={corAcento}
           strokeWidth="5"
           fill="transparent"
           strokeDasharray={circunferencia}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
         />
       </svg>
       <span
         style={{
           position: 'absolute',
-          fontFamily: 'var(--fonte-dado)',
-          fontSize: '13px',
-          fontWeight: 600,
-          color: 'var(--tinta)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: tamanho > 80 ? '16px' : '13px',
+          fontWeight: 700,
+          color: 'var(--text-primary)',
         }}
       >
-        {score}%
+        {porcentagem}%
       </span>
     </div>
   )
