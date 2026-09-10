@@ -9,6 +9,12 @@ export function AppProvider({ children }) {
   const [erro, setErro] = useState(null)
   const [historico, setHistorico] = useState([])
   const [analiseSelecionada, setAnaliseSelecionada] = useState(null)
+  const [vagaParaAdaptar, setVagaParaAdaptar] = useState(null)
+
+  function abrirAdaptacaoParaVaga(vaga) {
+    setVagaParaAdaptar(vaga)
+    setTelaAtiva('adaptar')
+  }
 
   const value = {
     telaAtiva,
@@ -23,6 +29,9 @@ export function AppProvider({ children }) {
     setHistorico,
     analiseSelecionada,
     setAnaliseSelecionada,
+    vagaParaAdaptar,
+    setVagaParaAdaptar,
+    abrirAdaptacaoParaVaga,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

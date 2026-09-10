@@ -53,6 +53,18 @@ export const api = {
     })
   },
 
+  adaptarCurriculo: ({ textoCurriculo, dadosCurriculo, descricaoVaga, tituloVaga }) => {
+    return request('/adaptar-curriculo', {
+      method: 'POST',
+      body: JSON.stringify({
+        texto_curriculo: textoCurriculo,
+        dados_curriculo: dadosCurriculo,
+        descricao_vaga: descricaoVaga,
+        titulo_vaga: tituloVaga,
+      }),
+    })
+  },
+
   // Histórico
   listarHistorico: () => request('/historico/'),
   detalheAnalise: (id) => request(`/historico/${id}`),
