@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from fastapi import APIRouter, UploadFile, HTTPException
 
 from app.core.config import TAMANHO_MAXIMO_MB
+from app.database import get_db
+from app.models.analise import Analise
 from app.services import curriculo, ia, avaliador, buscador, matcher
 
 logger = logging.getLogger(__name__)
@@ -94,7 +96,27 @@ async def enviar_curriculo(arquivo: UploadFile):
 
     vagas_encontradas.sort(key=lambda v: v["score"], reverse=True)
 
+    # Salvar no banco
+    try:
+        db = next(get_db())
+        analise = Analise(
+            texto_curriculo=texto,
+            nota_geral=avaliacao.get("nota_geral", 0),
+        )
+        analise.dados_curriculo = dados_estruturados
+        analise.avaliacao = avaliacao
+        analise.vagas = vagas_encontradas
+        db.add(analise)
+        db.commit()
+        db.refresh(analise)
+        analise_id = analise.id
+        logger.info(f"Análise #{analise_id} salva no banco")
+    except Exception as erro:
+        logger.warning(f"Erro ao salvar no banco: {erro}")
+        analise_id = None
+
     return {
+        "id": analise_id,
         "dados_curriculo": dados_estruturados,
         "avaliacao": avaliacao,
         "vagas_encontradas": vagas_encontradas,
