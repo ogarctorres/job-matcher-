@@ -7,11 +7,14 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  Wand2,
 } from 'lucide-react'
 import { api } from '../services/api'
+import { useApp } from '../contexts/AppContext'
 import ModalCarta from './ModalCarta'
 
 function CardVaga({ vaga, dadosCurriculo }) {
+  const { abrirAdaptacaoParaVaga } = useApp()
   const [sugestoes, setSugestoes] = useState(null)
   const [carregandoSugestao, setCarregandoSugestao] = useState(false)
   const [erroSugestao, setErroSugestao] = useState(null)
@@ -97,6 +100,16 @@ function CardVaga({ vaga, dadosCurriculo }) {
           >
             <FileText size={14} color="var(--accent)" />
             <span>Gerar Carta</span>
+          </button>
+
+          <button
+            className="botao-secundario"
+            onClick={() => abrirAdaptacaoParaVaga(vaga)}
+            style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'var(--accent-border)' }}
+            title="Reescrever meu currículo direcionado aos requisitos desta vaga"
+          >
+            <Wand2 size={14} color="var(--accent)" />
+            <span>Otimizar Currículo</span>
           </button>
         </div>
 
