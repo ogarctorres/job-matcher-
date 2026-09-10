@@ -75,3 +75,7 @@ Acesse: `http://localhost:5173`
 
 ## 📄 Licença
 Distribuído sob a licença MIT. Veja `LICENSE` para mais detalhes.
+
+👤 Autor
+
+Vinicius Torres
