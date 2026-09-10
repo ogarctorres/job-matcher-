@@ -12,6 +12,13 @@ import matcher
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class SugestaoRequest(BaseModel):
     dados_curriculo: dict
     vaga: dict
@@ -30,12 +37,6 @@ async def gerar_sugestao(dados: SugestaoRequest):
 
     return resultado
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 TAMANHO_MAXIMO_MB = 8
 
