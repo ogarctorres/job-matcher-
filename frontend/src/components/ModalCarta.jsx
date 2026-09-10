@@ -1,12 +1,14 @@
 import { useState } from 'react'
+import { X, Copy, Check, Sparkles, Loader2 } from 'lucide-react'
 import { api } from '../services/api'
+import { useCopiaClipboard } from '../hooks/useCopiaClipboard'
 
 function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
   const [carta, setCarta] = useState('')
   const [assunto, setAssunto] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
-  const [copiado, setCopiado] = useState(false)
+  const { copiado, copiar } = useCopiaClipboard()
 
   async function gerar() {
     setCarregando(true)
@@ -22,94 +24,146 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
     }
   }
 
-  function copiarTexto() {
+  function handleCopiarTudo() {
     const textoCompleto = `Assunto: ${assunto}\n\n${carta}`
-    navigator.clipboard.writeText(textoCompleto)
-    setCopiado(true)
-    setTimeout(() => setCopiado(false), 2500)
+    copiar(textoCompleto)
   }
 
   return (
-    <div className="modal-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.65)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
-    }}>
-      <div className="modal-conteudo" style={{
-        backgroundColor: 'var(--papel)',
-        padding: '28px',
-        borderRadius: '6px',
-        maxWidth: '650px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        border: '1px solid var(--linha)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0, fontFamily: 'var(--fonte-titulo)' }}>Carta de Apresentação com IA</h3>
-          <button onClick={onFechar} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+    <div className="modal-overlay" onClick={onFechar}>
+      <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+        {/* Topo do Modal */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <span className="rotulo" style={{ marginBottom: '6px' }}>Gerador de Apresentação</span>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Carta Customizada para a Vaga
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+              {vaga.titulo} • <strong style={{ color: 'var(--text-secondary)' }}>{vaga.empresa}</strong>
+            </p>
+          </div>
+          <button
+            onClick={onFechar}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              padding: '6px',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+            }}
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <p style={{ color: 'var(--tinta-suave)', fontSize: '14px', marginBottom: '20px' }}>
-          Vaga: <strong>{vaga.titulo}</strong> na <strong>{vaga.empresa}</strong>
-        </p>
-
+        {/* Estado Inicial sem carta */}
         {!carta && !carregando && (
-          <div style={{ textAlign: 'center', padding: '30px 0' }}>
-            <p style={{ marginBottom: '18px', color: 'var(--tinta-suave)' }}>
-              A IA vai criar uma carta personalizada destacando suas habilidades específicas para esta vaga.
+          <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: 'var(--bg-surface-subtle)', borderRadius: 'var(--radius-lg)' }}>
+            <div className="estado-vazio-icone-box" style={{ margin: '0 auto 16px' }}>
+              <Sparkles size={24} color="var(--accent)" />
+            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
+              Gerar Texto Personalizado
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13.5px', maxWidth: '44ch', margin: '0 auto 24px', lineHeight: '1.5' }}>
+              A inteligência analisa o perfil do seu currículo e a descrição desta vaga específica para redigir uma carta elegante e persuasiva.
             </p>
-            <button className="botao-buscar" onClick={gerar}>
-              ✨ Gerar Carta Personalizada
+            <button className="botao-primario" onClick={gerar}>
+              <Sparkles size={16} />
+              <span>Gerar Carta com IA</span>
             </button>
           </div>
         )}
 
+        {/* Estado Carregando */}
         {carregando && (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <p style={{ color: 'var(--latao)', fontFamily: 'var(--fonte-dado)' }}>Escrevendo sua carta com Gemini 3.6 Flash...</p>
+          <div style={{ textAlign: 'center', padding: '50px 20px' }}>
+            <Loader2 size={32} className="animar-spin" style={{ animation: 'spin 1s linear infinite', color: 'var(--accent)', margin: '0 auto 16px' }} />
+            <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>
+              Redigindo sua carta de apresentação...
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
+              Alinhando competências técnicas e tom profissional.
+            </p>
           </div>
         )}
 
-        {erro && <p className="mensagem-erro" style={{ marginTop: '12px' }}>{erro}</p>}
+        {/* Erro */}
+        {erro && <div className="mensagem-erro" style={{ marginTop: '16px' }}>{erro}</div>}
 
+        {/* Conteúdo Gerado */}
         {carta && (
           <div>
             {assunto && (
-              <div style={{ marginBottom: '16px', background: 'var(--papel-fundo)', padding: '10px 14px', borderRadius: '4px', border: '1px solid var(--linha)' }}>
-                <span className="rotulo-pequeno" style={{ display: 'block', marginBottom: '4px' }}>Sugestão de Assunto:</span>
-                <strong>{assunto}</strong>
+              <div
+                style={{
+                  marginBottom: '16px',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  Assunto Recomendado para E-mail:
+                </span>
+                <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {assunto}
+                </span>
               </div>
             )}
 
-            <div style={{
-              background: 'var(--papel-fundo)',
-              padding: '16px',
-              borderRadius: '4px',
-              border: '1px solid var(--linha)',
-              whiteSpace: 'pre-wrap',
-              lineHeight: '1.6',
-              fontSize: '14px',
-              color: 'var(--tinta)'
-            }}>
+            <div
+              style={{
+                backgroundColor: 'var(--bg-app)',
+                border: '1px solid var(--border-card)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '20px',
+                fontSize: '14px',
+                lineHeight: '1.7',
+                color: 'var(--text-primary)',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '360px',
+                overflowY: 'auto',
+              }}
+            >
               {carta}
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button className="botao-secundario" style={{ margin: 0 }} onClick={copiarTexto}>
-                {copiado ? '✅ Copiado!' : '📋 Copiar Carta'}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                className="botao-secundario"
+                onClick={gerar}
+                disabled={carregando}
+                style={{ fontSize: '13px' }}
+              >
+                Regerar
               </button>
-              <button className="botao-buscar" onClick={onFechar}>
-                Concluído
-              </button>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  className="botao-primario"
+                  onClick={handleCopiarTudo}
+                  style={{
+                    backgroundColor: copiado ? 'var(--success)' : 'var(--accent)',
+                  }}
+                >
+                  {copiado ? (
+                    <>
+                      <Check size={16} />
+                      <span>Copiado com Sucesso!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={16} />
+                      <span>Copiar Assunto e Carta</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
