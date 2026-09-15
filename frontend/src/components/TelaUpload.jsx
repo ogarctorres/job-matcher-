@@ -49,20 +49,20 @@ function TelaUpload() {
   }
 
   function formatarTamanho(bytes) {
-    if (!bytes) return '0 KB'
+    if (!bytes) return '0\u00A0KB'
     const kb = bytes / 1024
-    if (kb < 1024) return `${kb.toFixed(1)} KB`
-    return `${(kb / 1024).toFixed(1)} MB`
+    if (kb < 1024) return `${kb.toFixed(1)}\u00A0KB`
+    return `${(kb / 1024).toFixed(1)}\u00A0MB`
   }
 
   async function enviarCurriculo() {
     if (!arquivo) return
     setCarregando(true)
     setErro(null)
-    setEtapaStatus('Extraindo dados do PDF...')
+    setEtapaStatus('Extraindo dados do PDF…')
 
     try {
-      setEtapaStatus('Analisando perfil técnico e competências...')
+      setEtapaStatus('Analisando perfil técnico e competências…')
       const dados = await api.enviarCurriculo(arquivo)
       setResultado(dados)
       setTelaAtiva('avaliacao')
@@ -94,19 +94,21 @@ function TelaUpload() {
             onDrop={handleDrop}
           >
             <input
+              id="upload-curriculo-pdf"
               type="file"
               accept=".pdf"
               onChange={handleMudancaArquivo}
               disabled={carregando}
+              aria-label="Selecione ou arraste seu currículo em formato PDF"
             />
             <div className="dropzone-icone-box">
-              <UploadCloud size={24} strokeWidth={2} />
+              <UploadCloud size={24} strokeWidth={2} aria-hidden="true" />
             </div>
             <p className="dropzone-titulo">
               {arrastando ? 'Solte o arquivo PDF aqui' : 'Arraste seu currículo ou clique para procurar'}
             </p>
             <p className="dropzone-subtitulo">
-              Suporta apenas documentos em formato PDF (tamanho máximo de 8MB).
+              Suporta apenas documentos em formato PDF (tamanho máximo de 8&nbsp;MB).
             </p>
           </div>
         ) : (
@@ -115,15 +117,16 @@ function TelaUpload() {
             <div className="card-arquivo-selecionado">
               <div className="card-arquivo-info">
                 <div style={{ color: 'var(--accent)', display: 'flex' }}>
-                  <FileText size={22} />
+                  <FileText size={22} aria-hidden="true" />
                 </div>
                 <div>
                   <p className="card-arquivo-nome">{arquivo.name}</p>
-                  <p className="card-arquivo-tamanho">{formatarTamanho(arquivo.size)}</p>
+                  <p className="card-arquivo-tamanho tabular-nums">{formatarTamanho(arquivo.size)}</p>
                 </div>
               </div>
               {!carregando && (
                 <button
+                  type="button"
                   onClick={() => setArquivo(null)}
                   style={{
                     background: 'none',
@@ -133,9 +136,10 @@ function TelaUpload() {
                     display: 'flex',
                     padding: '4px',
                   }}
-                  title="Remover arquivo"
+                  title="Remover arquivo selecionado"
+                  aria-label="Remover arquivo selecionado"
                 >
-                  <X size={18} />
+                  <X size={18} aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -143,6 +147,7 @@ function TelaUpload() {
             {/* Ação principal */}
             <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
               <button
+                type="button"
                 className="botao-buscar"
                 onClick={enviarCurriculo}
                 disabled={carregando}
@@ -150,18 +155,18 @@ function TelaUpload() {
               >
                 {carregando ? (
                   <>
-                    <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Processando com IA...</span>
+                    <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
+                    <span>Processando com IA…</span>
                   </>
                 ) : (
                   <>
                     <span>Iniciar Análise</span>
-                    <ArrowRight size={16} />
+                    <ArrowRight size={16} aria-hidden="true" />
                   </>
                 )}
               </button>
               {!carregando && (
-                <button className="botao-secundario" onClick={() => setArquivo(null)}>
+                <button type="button" className="botao-secundario" onClick={() => setArquivo(null)}>
                   Trocar PDF
                 </button>
               )}
@@ -169,14 +174,14 @@ function TelaUpload() {
           </div>
         )}
 
-        {/* Stepper durante o processamento */}
+        {/* Stepper durante o processamento com acessibilidade aria-live */}
         {carregando && (
-          <div className="stepper-processamento">
+          <div className="stepper-processamento" role="status" aria-live="polite">
             <div className="stepper-cabecalho">
               <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Etapa atual:</span>
               <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}>{etapaStatus}</span>
             </div>
-            <div className="barra-progresso-trilho">
+            <div className="barra-progresso-trilho" role="progressbar" aria-label="Progresso da análise do currículo" aria-valuemin="0" aria-valuemax="100">
               <div className="barra-progresso-preenchimento" style={{ width: '75%' }} />
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -185,9 +190,9 @@ function TelaUpload() {
           </div>
         )}
 
-        {/* Mensagem de Erro */}
+        {/* Mensagem de Erro com role=alert */}
         {erro && (
-          <div style={{ marginTop: '16px' }} className="mensagem-erro">
+          <div style={{ marginTop: '16px' }} className="mensagem-erro" role="alert" aria-live="assertive">
             {erro}
           </div>
         )}
