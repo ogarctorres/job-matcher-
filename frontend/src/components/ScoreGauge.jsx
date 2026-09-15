@@ -13,6 +13,11 @@ function ScoreGauge({ score = 0, tamanho = 72 }) {
 
   return (
     <div
+      role="meter"
+      aria-valuenow={porcentagem}
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-label={`Score de compatibilidade: ${porcentagem}%`}
       style={{
         position: 'relative',
         width: tamanho,
@@ -22,7 +27,7 @@ function ScoreGauge({ score = 0, tamanho = 72 }) {
         justifyContent: 'center',
       }}
     >
-      <svg width={tamanho} height={tamanho} style={{ transform: 'rotate(-90deg)' }}>
+      <svg width={tamanho} height={tamanho} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
         <circle
           cx={tamanho / 2}
           cy={tamanho / 2}
@@ -45,6 +50,7 @@ function ScoreGauge({ score = 0, tamanho = 72 }) {
         />
       </svg>
       <span
+        className="tabular-nums"
         style={{
           position: 'absolute',
           fontFamily: 'var(--font-mono)',
