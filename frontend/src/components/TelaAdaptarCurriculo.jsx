@@ -126,13 +126,18 @@ function TelaAdaptarCurriculo() {
       >
         <form onSubmit={handleAdaptar} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <label
+              htmlFor="input-titulo-vaga"
+              style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}
+            >
               Título do Cargo ou Vaga
             </label>
             <input
+              id="input-titulo-vaga"
+              name="tituloVaga"
               type="text"
               className="campo-busca-input"
-              placeholder="Ex: Estágio em Engenharia de Dados, Desenvolvedor Python Júnior..."
+              placeholder="Ex: Estágio em Engenharia de Dados, Desenvolvedor Python Júnior…"
               value={tituloVaga}
               onChange={(e) => setTituloVaga(e.target.value)}
               style={{ width: '100%' }}
@@ -140,20 +145,25 @@ function TelaAdaptarCurriculo() {
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+            <label
+              htmlFor="textarea-descricao-vaga"
+              style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}
+            >
               Descrição e Requisitos da Vaga (Cole aqui o texto da publicação)
             </label>
             <textarea
+              id="textarea-descricao-vaga"
+              name="descricaoVaga"
               className="campo-busca-input"
               rows={6}
-              placeholder="Cole aqui os requisitos, responsabilidades e tecnologias mencionadas no anúncio da vaga..."
+              placeholder="Cole aqui os requisitos, responsabilidades e tecnologias mencionadas no anúncio da vaga…"
               value={descricaoVaga}
               onChange={(e) => setDescricaoVaga(e.target.value)}
               style={{ width: '100%', resize: 'vertical', lineHeight: '1.5' }}
             />
           </div>
 
-          {erro && <div className="mensagem-erro">{erro}</div>}
+          {erro && <div className="mensagem-erro" role="alert">{erro}</div>}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             {vagaParaAdaptar && (
@@ -176,12 +186,12 @@ function TelaAdaptarCurriculo() {
             >
               {carregando ? (
                 <>
-                  <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                  <span>Reescrevendo e Alinhando com Gemini...</span>
+                  <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
+                  <span>Reescrevendo e Alinhando com Gemini…</span>
                 </>
               ) : (
                 <>
-                  <Wand2 size={16} />
+                  <Wand2 size={16} aria-hidden="true" />
                   <span>Otimizar Currículo para esta Vaga</span>
                 </>
               )}
