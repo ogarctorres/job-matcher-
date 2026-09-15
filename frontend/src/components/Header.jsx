@@ -42,35 +42,46 @@ function Header() {
   return (
     <header className="app-header">
       <div className="app-header-conteudo">
-        {/* Logo Vektor Oficial */}
-        <div className="header-logo" onClick={() => setTelaAtiva('upload')} style={{ cursor: 'pointer' }}>
+        {/* Logo Vektor Oficial com elemento interativo semântico */}
+        <button
+          type="button"
+          className="header-logo-btn"
+          onClick={() => setTelaAtiva('upload')}
+          aria-label="Ir para a tela de envio de currículo"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
           <LogoVektor tamanho={26} />
-        </div>
+        </button>
 
-        {/* Menu Horizontal de Navegação */}
-        <nav className="header-nav">
+        {/* Menu Horizontal de Navegação com semântica e estados de acessibilidade */}
+        <nav className="header-nav" aria-label="Navegação principal">
           {itensNav.map((item) => {
             const Icone = item.icone
             const ativo = telaAtiva === item.id
             return (
               <button
                 key={item.id}
+                type="button"
                 className={`header-nav-item ${ativo ? 'ativo' : ''} ${item.destaque ? 'item-destaque' : ''}`}
                 onClick={() => setTelaAtiva(item.id)}
+                aria-current={ativo ? 'page' : undefined}
               >
-                <Icone size={15} strokeWidth={ativo ? 2.2 : 1.8} />
+                <Icone size={15} strokeWidth={ativo ? 2.2 : 1.8} aria-hidden="true" />
                 <span>{item.label}</span>
-                {item.badge && <span className="header-badge">{item.badge}</span>}
+                {item.badge && <span className="header-badge tabular-nums">{item.badge}</span>}
               </button>
             )
           })}
         </nav>
 
-        {/* Status / Ação Rápida */}
-        <div className="header-status">
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }} />
+        {/* Status do Provedor de IA com acessibilidade */}
+        <div className="header-status" role="status" aria-label="Status do Provedor de Inteligência Artificial: Gemini Flash Online">
+          <span
+            style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }}
+            aria-hidden="true"
+          />
           <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-            Gemini 3.6 Flash
+            Gemini Flash
           </span>
         </div>
       </div>
