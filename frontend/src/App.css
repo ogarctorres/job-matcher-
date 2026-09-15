@@ -2,6 +2,28 @@
    JOB MATCHER — DESIGN SYSTEM SAAS MODERNO
    ========================================================================== */
 
+/* ---------- Skip Link para Acessibilidade (WCAG) ---------- */
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 16px;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  z-index: 10000;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: top 0.15s ease-out;
+}
+
+.skip-link:focus-visible {
+  top: 16px;
+  outline: 2px solid #fff;
+}
+
 /* ---------- Layout Geral com Header Superior ---------- */
 .app-layout-superior {
   display: flex;

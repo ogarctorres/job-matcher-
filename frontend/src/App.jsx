@@ -14,8 +14,12 @@ function ConteudoPrincipal() {
 
   return (
     <div className="app-layout-superior">
+      {/* Skip Link para navegadores e leitores de tela (WCAG / Web Interface Guidelines) */}
+      <a href="#conteudo-principal" className="skip-link">
+        Pular para o conteúdo principal
+      </a>
       <Header />
-      <main className="conteudo-principal">
+      <main id="conteudo-principal" className="conteudo-principal" tabIndex={-1}>
         {telaAtiva === 'upload' && <TelaUpload />}
         {telaAtiva === 'avaliacao' && <TelaAvaliacao />}
         {telaAtiva === 'vagas' && <TelaVagas />}
