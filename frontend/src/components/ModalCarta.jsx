@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Copy, Check, Sparkles, Loader2 } from 'lucide-react'
 import { api } from '../services/api'
 import { useCopiaClipboard } from '../hooks/useCopiaClipboard'
@@ -9,6 +9,17 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const { copiado, copiar } = useCopiaClipboard()
+
+  // Suporte a teclado: fechar modal ao pressionar Escape (WCAG / Web Interface Guidelines)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        onFechar()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onFechar])
 
   async function gerar() {
     setCarregando(true)
@@ -30,13 +41,19 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onFechar}>
-      <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onFechar} role="presentation">
+      <div
+        className="modal-conteudo"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-carta-titulo"
+      >
         {/* Topo do Modal */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             <span className="rotulo" style={{ marginBottom: '6px' }}>Gerador de Apresentação</span>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <h2 id="modal-carta-titulo" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Carta Customizada para a Vaga
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -44,7 +61,9 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
             </p>
           </div>
           <button
+            type="button"
             onClick={onFechar}
+            aria-label="Fechar janela de carta de apresentação"
             style={{
               background: 'none',
               border: 'none',
@@ -55,7 +74,7 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
               display: 'flex',
             }}
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
@@ -71,8 +90,8 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
             <p style={{ color: 'var(--text-muted)', fontSize: '13.5px', maxWidth: '44ch', margin: '0 auto 24px', lineHeight: '1.5' }}>
               A inteligência analisa o perfil do seu currículo e a descrição desta vaga específica para redigir uma carta elegante e persuasiva.
             </p>
-            <button className="botao-primario" onClick={gerar}>
-              <Sparkles size={16} />
+            <button type="button" className="botao-primario" onClick={gerar}>
+              <Sparkles size={16} aria-hidden="true" />
               <span>Gerar Carta com IA</span>
             </button>
           </div>
@@ -80,10 +99,10 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
 
         {/* Estado Carregando */}
         {carregando && (
-          <div style={{ textAlign: 'center', padding: '50px 20px' }}>
-            <Loader2 size={32} className="animar-spin" style={{ animation: 'spin 1s linear infinite', color: 'var(--accent)', margin: '0 auto 16px' }} />
+          <div style={{ textAlign: 'center', padding: '50px 20px' }} role="status" aria-live="polite">
+            <Loader2 size={32} className="animar-spin" style={{ animation: 'spin 1s linear infinite', color: 'var(--accent)', margin: '0 auto 16px' }} aria-hidden="true" />
             <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>
-              Redigindo sua carta de apresentação...
+              Redigindo sua carta de apresentação…
             </p>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
               Alinhando competências técnicas e tom profissional.
@@ -92,7 +111,7 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
         )}
 
         {/* Erro */}
-        {erro && <div className="mensagem-erro" style={{ marginTop: '16px' }}>{erro}</div>}
+        {erro && <div className="mensagem-erro" role="alert" style={{ marginTop: '16px' }}>{erro}</div>}
 
         {/* Conteúdo Gerado */}
         {carta && (
@@ -129,12 +148,16 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
                 maxHeight: '360px',
                 overflowY: 'auto',
               }}
+              tabIndex={0}
+              role="region"
+              aria-label="Texto da carta de apresentação gerada"
             >
               {carta}
             </div>
 
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button
+                type="button"
                 className="botao-secundario"
                 onClick={gerar}
                 disabled={carregando}
@@ -145,20 +168,22 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
 
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
+                  type="button"
                   className="botao-primario"
                   onClick={handleCopiarTudo}
                   style={{
                     backgroundColor: copiado ? 'var(--success)' : 'var(--accent)',
                   }}
+                  aria-label={copiado ? 'Assunto e carta copiados com sucesso' : 'Copiar assunto e texto da carta para a área de transferência'}
                 >
                   {copiado ? (
                     <>
-                      <Check size={16} />
+                      <Check size={16} aria-hidden="true" />
                       <span>Copiado com Sucesso!</span>
                     </>
                   ) : (
                     <>
-                      <Copy size={16} />
+                      <Copy size={16} aria-hidden="true" />
                       <span>Copiar Assunto e Carta</span>
                     </>
                   )}
