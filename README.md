@@ -11,7 +11,7 @@
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/Frontend-React_19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Proprietary](https://img.shields.io/badge/License-All_Rights_Reserved-red.svg)](LICENSE)
 
 O **Vektor** é uma aplicação Full Stack moderna que utiliza Inteligência Artificial generativa (Google Gemini Flash) e engenharia de dados para analisar currículos em PDF, comparar competências com vagas reais de estágio no mercado de tecnologia (via Jooble API) e gerar diagnósticos, reescrita de currículo otimizada para ATS e cartas de apresentação personalizadas.
 
@@ -118,8 +118,8 @@ pytest
 
 ---
 
-## 📄 Licença
-Distribuído sob a licença MIT. Veja [LICENSE](LICENSE) para mais detalhes.
+## 📄 Licença & Direitos Autorais
+Código proprietário sob proteção de direitos autorais (All Rights Reserved). Disponibilizado publicamente exclusivamente para avaliação técnica e acadêmica. Veja [LICENSE](LICENSE) para detalhes dos termos de uso.
 
 ---
 
