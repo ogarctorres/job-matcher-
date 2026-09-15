@@ -11,6 +11,8 @@ function Toast({ mensagem, tipo = 'info' }) {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       style={{
         position: 'fixed',
         bottom: '24px',
@@ -19,9 +21,9 @@ function Toast({ mensagem, tipo = 'info' }) {
         border: `1px solid ${cor.border}`,
         color: cor.texto,
         padding: '12px 18px',
-        borderRadius: '4px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        fontFamily: 'var(--fonte-corpo)',
+        borderRadius: 'var(--radius-md)',
+        boxShadow: 'var(--shadow-modal)',
+        fontFamily: 'var(--font-sans)',
         fontSize: '14px',
         zIndex: 9999,
       }}
