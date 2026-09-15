@@ -54,25 +54,25 @@ function CardVaga({ vaga, dadosCurriculo }) {
   }
 
   return (
-    <div className="card-vaga">
+    <article className="card-vaga">
       <div className="card-vaga-header">
         <div>
           <h3 className="card-vaga-titulo">{vaga.titulo}</h3>
           <div className="card-vaga-empresa">
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Building2 size={14} />
+              <Building2 size={14} aria-hidden="true" />
               {vaga.empresa}
             </span>
             {vaga.localizacao && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MapPin size={14} />
+                <MapPin size={14} aria-hidden="true" />
                 {vaga.localizacao}
               </span>
             )}
           </div>
         </div>
 
-        <div className={`card-vaga-score-badge ${badgeClasse}`}>
+        <div className={`card-vaga-score-badge ${badgeClasse} tabular-nums`} role="status" aria-label={`Score de aderência: ${score} por cento, ${labelScore}`}>
           <span>{score}%</span>
           <span style={{ fontWeight: 500, fontSize: '11px', opacity: 0.85 }}>• {labelScore}</span>
         </div>
@@ -83,32 +83,40 @@ function CardVaga({ vaga, dadosCurriculo }) {
       <div className="card-vaga-acoes">
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
+            type="button"
             className="botao-secundario"
             onClick={alternarSugestoes}
             disabled={carregandoSugestao}
+            aria-expanded={painelAberto}
+            aria-label={sugestoes && painelAberto ? 'Ocultar dicas de aplicação' : 'Ver dicas de aplicação para esta vaga'}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
-            <Lightbulb size={14} color="var(--warning)" />
-            <span>{carregandoSugestao ? 'Buscando dicas...' : sugestoes && painelAberto ? 'Ocultar Dicas' : 'Dicas de Aplicação'}</span>
-            {sugestoes && (painelAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+            <Lightbulb size={14} color="var(--warning)" aria-hidden="true" />
+            <span>{carregandoSugestao ? 'Buscando dicas…' : sugestoes && painelAberto ? 'Ocultar Dicas' : 'Dicas de Aplicação'}</span>
+            {sugestoes && (painelAberto ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />)}
           </button>
 
           <button
+            type="button"
             className="botao-secundario"
             onClick={() => setModalCartaAberto(true)}
+            aria-haspopup="dialog"
+            aria-label={`Gerar carta de apresentação para ${vaga.titulo}`}
             style={{ padding: '7px 14px', fontSize: '12.5px' }}
           >
-            <FileText size={14} color="var(--accent)" />
+            <FileText size={14} color="var(--accent)" aria-hidden="true" />
             <span>Gerar Carta</span>
           </button>
 
           <button
+            type="button"
             className="botao-secundario"
             onClick={() => abrirAdaptacaoParaVaga(vaga)}
             style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'var(--accent-border)' }}
             title="Reescrever meu currículo direcionado aos requisitos desta vaga"
+            aria-label={`Otimizar currículo para a vaga de ${vaga.titulo}`}
           >
-            <Wand2 size={14} color="var(--accent)" />
+            <Wand2 size={14} color="var(--accent)" aria-hidden="true" />
             <span>Otimizar Currículo</span>
           </button>
         </div>
@@ -118,16 +126,17 @@ function CardVaga({ vaga, dadosCurriculo }) {
             className="link-vaga"
             href={vaga.link}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            aria-label={`Acessar anúncio original da vaga de ${vaga.titulo} na empresa ${vaga.empresa} (abre em nova aba)`}
           >
             <span>Ver Vaga</span>
-            <ExternalLink size={14} />
+            <ExternalLink size={14} aria-hidden="true" />
           </a>
         )}
       </div>
 
       {erroSugestao && (
-        <p className="mensagem-erro" style={{ marginTop: '12px' }}>
+        <p className="mensagem-erro" role="alert" style={{ marginTop: '12px' }}>
           {erroSugestao}
         </p>
       )}
@@ -183,7 +192,7 @@ function CardVaga({ vaga, dadosCurriculo }) {
           onFechar={() => setModalCartaAberto(false)}
         />
       )}
-    </div>
+    </article>
   )
 }
 
