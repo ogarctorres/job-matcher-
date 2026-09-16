@@ -26,31 +26,46 @@ async def enviar_curriculo(
 ):
     """Recebe um PDF de currículo, analisa com IA e busca vagas compatíveis."""
 
-    # Validar tipo
+    # 1. Validar tipo MIME informado no cabeçalho
     if arquivo.content_type != "application/pdf":
         raise HTTPException(
             status_code=400,
             detail="Envie um arquivo em PDF. Formato recebido: " + str(arquivo.content_type),
         )
 
-    # Ler conteúdo
-    conteudo = await arquivo.read()
+    # 2. Leitura em chunks com limite estrito de memória para proteção contra DoS
+    limite_bytes = TAMANHO_MAXIMO_MB * 1024 * 1024
+    chunks = []
+    tamanho_total = 0
 
-    # Validar tamanho
-    tamanho_mb = len(conteudo) / (1024 * 1024)
-    if tamanho_mb > TAMANHO_MAXIMO_MB:
+    while True:
+        chunk = await arquivo.read(64 * 1024)
+        if not chunk:
+            break
+        tamanho_total += len(chunk)
+        if tamanho_total > limite_bytes:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Arquivo muito grande. O limite máximo permitido é de {TAMANHO_MAXIMO_MB}MB.",
+            )
+        chunks.append(chunk)
+
+    conteudo = b"".join(chunks)
+
+    # 3. Validar assinatura binária do arquivo (Magic Numbers %PDF-)
+    if not conteudo.startswith(b"%PDF-"):
         raise HTTPException(
             status_code=400,
-            detail=f"Arquivo muito grande ({tamanho_mb:.1f}MB). O limite é {TAMANHO_MAXIMO_MB}MB.",
+            detail="O arquivo enviado não é um documento PDF válido (cabeçalho de arquivo inválido).",
         )
 
-    # Extrair texto
+    # 4. Extrair texto de forma protegida
     try:
         texto = curriculo.extrair_texto_pdf(conteudo)
     except Exception:
         raise HTTPException(
             status_code=400,
-            detail="Não conseguimos ler esse PDF. Ele pode estar corrompido ou protegido.",
+            detail="Não conseguimos ler esse PDF. Ele pode estar corrompido ou protegido por senha.",
         )
 
     if not texto or len(texto.strip()) < 50:
