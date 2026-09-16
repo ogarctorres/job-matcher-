@@ -2,7 +2,8 @@
 
 import logging
 from pydantic import BaseModel
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 from app.core.config import TAMANHO_MAXIMO_MB
 from app.database import get_db
@@ -19,7 +20,10 @@ class SugestaoRequest(BaseModel):
 
 
 @router.post("/curriculo")
-async def enviar_curriculo(arquivo: UploadFile):
+async def enviar_curriculo(
+    arquivo: UploadFile,
+    db: Session = Depends(get_db)
+):
     """Recebe um PDF de currículo, analisa com IA e busca vagas compatíveis."""
 
     # Validar tipo
@@ -98,7 +102,6 @@ async def enviar_curriculo(arquivo: UploadFile):
 
     # Salvar no banco
     try:
-        db = next(get_db())
         analise = Analise(
             texto_curriculo=texto,
             nota_geral=avaliacao.get("nota_geral", 0),
@@ -113,6 +116,7 @@ async def enviar_curriculo(arquivo: UploadFile):
         logger.info(f"Análise #{analise_id} salva no banco")
     except Exception as erro:
         logger.warning(f"Erro ao salvar no banco: {erro}")
+        db.rollback()
         analise_id = None
 
     return {

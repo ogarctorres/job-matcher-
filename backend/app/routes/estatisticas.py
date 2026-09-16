@@ -3,7 +3,8 @@
 import json
 import logging
 from collections import Counter
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.database import get_db
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/estatisticas", tags=["Estatísticas"])
 
 
 @router.get("/")
-def obter_estatisticas():
+def obter_estatisticas(db: Session = Depends(get_db)):
     """
     Retorna estatísticas agregadas de todas as análises:
     - Total de análises
@@ -22,7 +23,6 @@ def obter_estatisticas():
     - Skills mais frequentes
     - Cargos mais buscados
     """
-    db = next(get_db())
 
     total = db.query(func.count(Analise.id)).scalar() or 0
     media_nota = db.query(func.avg(Analise.nota_geral)).scalar() or 0
