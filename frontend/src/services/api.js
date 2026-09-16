@@ -56,7 +56,7 @@ export const api = {
     })
   },
 
-  adaptarCurriculo: ({ textoCurriculo, dadosCurriculo, descricaoVaga, tituloVaga }) => {
+  adaptarCurriculo: ({ textoCurriculo, dadosCurriculo, descricaoVaga, tituloVaga, modoGenerico }) => {
     return request('/adaptar-curriculo', {
       method: 'POST',
       body: JSON.stringify({
@@ -64,6 +64,17 @@ export const api = {
         dados_curriculo: dadosCurriculo,
         descricao_vaga: descricaoVaga,
         titulo_vaga: tituloVaga,
+        modo_generico: modoGenerico,
+      }),
+    })
+  },
+
+  gerarCurriculoGenerico: ({ textoCurriculo, dadosCurriculo }) => {
+    return request('/gerar-curriculo-generico', {
+      method: 'POST',
+      body: JSON.stringify({
+        texto_curriculo: textoCurriculo,
+        dados_curriculo: dadosCurriculo,
       }),
     })
   },
