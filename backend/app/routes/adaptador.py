@@ -12,15 +12,15 @@ router = APIRouter(tags=["Adaptação de Currículo"])
 
 
 class AdaptarCurriculoRequest(BaseModel):
-    texto_curriculo: Optional[str] = Field(default="", description="Texto do currículo original")
+    texto_curriculo: Optional[str] = Field(default="", max_length=25000, description="Texto do currículo original")
     dados_curriculo: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Dados estruturados do currículo")
-    descricao_vaga: Optional[str] = Field(default="", description="Descrição e requisitos da vaga alvo")
-    titulo_vaga: Optional[str] = Field(default="", description="Título da vaga alvo")
+    descricao_vaga: Optional[str] = Field(default="", max_length=25000, description="Descrição e requisitos da vaga alvo")
+    titulo_vaga: Optional[str] = Field(default="", max_length=500, description="Título da vaga alvo")
     modo_generico: Optional[bool] = Field(default=False, description="Forçar modo genérico ATS se True")
 
 
 class CurriculoGenericoRequest(BaseModel):
-    texto_curriculo: Optional[str] = Field(default="", description="Texto do currículo original")
+    texto_curriculo: Optional[str] = Field(default="", max_length=25000, description="Texto do currículo original")
     dados_curriculo: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Dados estruturados do currículo")
 
 

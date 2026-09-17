@@ -24,7 +24,9 @@ LOCALIZACAO = os.getenv("LOCALIZACAO", "São Paulo")
 DISTANCIA_KM = int(os.getenv("DISTANCIA_KM", "15"))
 
 # --- CORS ---
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
+DEFAULT_CORS_ORIGINS = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000"
+CORS_ORIGINS_RAW = os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS)
+CORS_ORIGINS = [origem.strip() for origem in CORS_ORIGINS_RAW.split(",") if origem.strip()]
 
 # --- Upload ---
 TAMANHO_MAXIMO_MB = int(os.getenv("TAMANHO_MAXIMO_MB", "8"))
