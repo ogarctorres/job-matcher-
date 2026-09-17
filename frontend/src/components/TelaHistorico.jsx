@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, Briefcase, Trash2, ArrowRight, History } from 'lucide-react'
+import { Calendar, Trash2, History } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 import SkillBadge from './SkillBadge'

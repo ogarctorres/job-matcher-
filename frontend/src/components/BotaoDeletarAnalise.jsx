@@ -1,4 +1,3 @@
-import { useApp } from '../contexts/AppContext'
 import { api } from '../services/api'
 
 function BotaoDeletarAnalise({ id, onSucesso }) {

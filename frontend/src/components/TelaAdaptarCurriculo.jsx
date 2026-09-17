@@ -4,21 +4,16 @@ import {
   Copy,
   Check,
   Download,
-  FileText,
   AlertCircle,
   Loader2,
   Sparkles,
   AlertTriangle,
-  CheckCircle2,
-  XCircle,
   ShieldCheck,
   Target,
-  ChevronRight,
   RotateCcw,
   Columns,
   FileCode,
   Calculator,
-  ArrowRight,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'

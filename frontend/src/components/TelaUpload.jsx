@@ -107,7 +107,7 @@ function TelaUpload() {
       const dados = await api.carregarDemo()
       setResultado(dados)
       setTelaAtiva('avaliacao')
-    } catch (falha) {
+    } catch {
       // Fallback estático garantido caso a API esteja em manutenção
       const demoFallback = {
         id: null,

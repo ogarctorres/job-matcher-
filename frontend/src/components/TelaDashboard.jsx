@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { TrendingUp, BarChart3, Target, Briefcase, RefreshCw, MapPin } from 'lucide-react'
 import { api } from '../services/api'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -10,11 +10,7 @@ function TelaDashboard() {
   const [erro, setErro] = useState(null)
   const [localizacaoConfig] = useLocalStorage('jm_localizacao', 'São Paulo')
 
-  useEffect(() => {
-    carregarDados()
-  }, [])
-
-  async function carregarDados() {
+  const carregarDados = useCallback(async () => {
     setCarregando(true)
     setErro(null)
     try {
@@ -29,7 +25,11 @@ function TelaDashboard() {
     } finally {
       setCarregando(false)
     }
-  }
+  }, [localizacaoConfig])
+
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
 
   return (
     <div className="tela">
