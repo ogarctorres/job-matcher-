@@ -8,7 +8,14 @@ import re
 import time
 import logging
 
-from app.core.config import IA_PROVIDER, GEMINI_API_KEY, OLLAMA_MODEL
+from app.core.config import (
+    IA_PROVIDER,
+    GEMINI_API_KEY,
+    GEMINI_MODEL,
+    GEMINI_MODEL_FALLBACK,
+    OLLAMA_MODEL,
+    IA_TIMEOUT_SEGUNDOS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +51,7 @@ def extrair_json(texto_resposta: str) -> dict:
 
 
 def _chamar_gemini(prompt: str) -> str:
-    """Chama a API do Google Gemini com modelo estável de alta cota."""
+    """Chama a API do Google Gemini com modelo oficial estável e timeout configurado."""
     import os
     import google.generativeai as genai
 
@@ -55,21 +62,31 @@ def _chamar_gemini(prompt: str) -> str:
     genai.configure(api_key=chave)
 
     try:
-        model = genai.GenerativeModel("gemini-flash-latest")
-        response = model.generate_content(prompt)
+        model = genai.GenerativeModel(GEMINI_MODEL)
+        response = model.generate_content(
+            prompt,
+            request_options={"timeout": float(IA_TIMEOUT_SEGUNDOS)},
+        )
         return response.text
     except Exception as erro_principal:
-        logger.warning(f"Erro no gemini-flash-latest: {erro_principal}. Tentando gemini-3.5-flash-lite...")
-        model_lite = genai.GenerativeModel("gemini-3.5-flash-lite")
-        response = model_lite.generate_content(prompt)
+        logger.warning(
+            f"Erro no modelo '{GEMINI_MODEL}': {erro_principal}. "
+            f"Tentando modelo de fallback '{GEMINI_MODEL_FALLBACK}'..."
+        )
+        model_fallback = genai.GenerativeModel(GEMINI_MODEL_FALLBACK)
+        response = model_fallback.generate_content(
+            prompt,
+            request_options={"timeout": float(IA_TIMEOUT_SEGUNDOS)},
+        )
         return response.text
 
 
 def _chamar_ollama(prompt: str) -> str:
-    """Chama o Ollama local."""
+    """Chama o Ollama local com timeout configurado."""
     import ollama
 
-    resposta = ollama.chat(
+    client = ollama.Client(timeout=float(IA_TIMEOUT_SEGUNDOS))
+    resposta = client.chat(
         model=OLLAMA_MODEL,
         messages=[{"role": "user", "content": prompt}],
         options={"num_predict": 1024, "num_ctx": 8192},
@@ -80,7 +97,7 @@ def _chamar_ollama(prompt: str) -> str:
 def chamar_ia(prompt: str, tentativas: int = 3, espera_segundos: int = 2) -> dict:
     """
     Chama a IA configurada e retorna o JSON parseado.
-    Tenta o provedor principal e, em caso de falha, tenta o fallback.
+    Tenta o provedor principal e, em caso de falha persistente, recorre ao fallback automático.
     """
     provedores = {
         "gemini": _chamar_gemini,
@@ -104,13 +121,13 @@ def chamar_ia(prompt: str, tentativas: int = 3, espera_segundos: int = 2) -> dic
             if tentativa < tentativas:
                 time.sleep(espera_segundos)
 
-    # Tenta fallback apenas se não for chamada cega a localhost em produção
-    if fallback and fallback_nome != "ollama":
+    # Executa fallback entre provedores se o primário esgotar as tentativas
+    if fallback:
         try:
-            logger.info(f"[ia_client] Tentando fallback com {fallback_nome}...")
+            logger.info(f"[ia_client] Tentando fallback entre provedores com '{fallback_nome}'...")
             texto_resposta = fallback(prompt)
             return extrair_json(texto_resposta)
         except Exception as erro_fallback:
-            logger.warning(f"[{fallback_nome}] fallback também falhou: {erro_fallback}")
+            logger.warning(f"[{fallback_nome}] Fallback entre provedores também falhou: {erro_fallback}")
 
-    raise ValueError(f"Falha após {tentativas} tentativas. Último erro: {ultimo_erro}")
+    raise ValueError(f"Falha após {tentativas} tentativas no provedor '{IA_PROVIDER}'. Último erro: {ultimo_erro}")
