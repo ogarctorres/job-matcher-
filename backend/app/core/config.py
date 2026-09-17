@@ -13,8 +13,8 @@ ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY", "")
 
 # --- IA ---
 IA_PROVIDER = os.getenv("IA_PROVIDER", "gemini")  # "gemini" ou "ollama"
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-GEMINI_MODEL_FALLBACK = os.getenv("GEMINI_MODEL_FALLBACK", "gemini-2.0-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+GEMINI_MODEL_FALLBACK = os.getenv("GEMINI_MODEL_FALLBACK", "gemini-3.1-flash-lite")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
 IA_TIMEOUT_SEGUNDOS = int(os.getenv("IA_TIMEOUT_SEGUNDOS", "30"))
 

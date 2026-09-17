@@ -59,7 +59,7 @@ def _chamar_gemini(prompt: str) -> str:
     if not chave:
         raise ValueError("Chave de API do Gemini não encontrada.")
 
-    genai.configure(api_key=chave)
+    genai.configure(api_key=chave, transport="rest")
 
     try:
         model = genai.GenerativeModel(GEMINI_MODEL)
@@ -73,12 +73,24 @@ def _chamar_gemini(prompt: str) -> str:
             f"Erro no modelo '{GEMINI_MODEL}': {erro_principal}. "
             f"Tentando modelo de fallback '{GEMINI_MODEL_FALLBACK}'..."
         )
-        model_fallback = genai.GenerativeModel(GEMINI_MODEL_FALLBACK)
-        response = model_fallback.generate_content(
-            prompt,
-            request_options={"timeout": float(IA_TIMEOUT_SEGUNDOS)},
-        )
-        return response.text
+        try:
+            model_fallback = genai.GenerativeModel(GEMINI_MODEL_FALLBACK)
+            response = model_fallback.generate_content(
+                prompt,
+                request_options={"timeout": float(IA_TIMEOUT_SEGUNDOS)},
+            )
+            return response.text
+        except Exception as erro_secundario:
+            logger.warning(
+                f"Erro no modelo de fallback '{GEMINI_MODEL_FALLBACK}': {erro_secundario}. "
+                "Tentando modelo terciário 'gemini-flash-latest'..."
+            )
+            model_terciario = genai.GenerativeModel("gemini-flash-latest")
+            response = model_terciario.generate_content(
+                prompt,
+                request_options={"timeout": float(IA_TIMEOUT_SEGUNDOS)},
+            )
+            return response.text
 
 
 def _chamar_ollama(prompt: str) -> str:
