@@ -146,6 +146,119 @@ async def enviar_curriculo(
     }
 
 
+@router.get("/curriculo/demo")
+def obter_curriculo_demo(db: Session = Depends(get_db)):
+    """Retorna um perfil de demonstração completo (Lucas Mendes - Ciência da Computação) e persiste no histórico."""
+    texto_cv = """
+    LUCAS MENDES
+    São Paulo, SP | lucas.mendes@email.com | (11) 98765-4321 | linkedin.com/in/lucas-mendes-dev
+
+    OBJETIVO
+    Estágio em Desenvolvimento Backend / Engenharia de Software
+
+    FORMAÇÃO
+    Bacharelado em Ciência da Computação — Universidade Presbiteriana Mackenzie
+    Previsão de conclusão: Dezembro de 2026 (4º semestre)
+
+    COMPETÊNCIAS TÉCNICAS
+    • Linguagens & Frameworks: Python (FastAPI, Flask, Django), SQL, JavaScript
+    • Bancos de Dados: PostgreSQL, MySQL, SQLite, Redis
+    • Ferramentas & Práticas: Git, GitHub, Docker, APIs RESTful, Testes Unitários (pytest), CI/CD
+
+    PROJETOS PRÁTICOS
+    API de Gestão de Tarefas & Microsserviços (Python / FastAPI / Docker)
+    • Desenvolveu API RESTful com autenticação JWT, documentação Swagger automática e banco PostgreSQL conteinerizado.
+    • Implementou cobertura de testes unitários superior a 85% utilizando pytest e GitHub Actions.
+
+    Sistema de Monitoramento de Preços (Python / BeautifulSoup / SQLite)
+    • Desenvolveu web scraper para coletar variações de preços de e-commerce e enviar alertas automatizados via Telegram Bot.
+    """
+
+    dados_estruturados = {
+        "nome": "Lucas Mendes",
+        "email": "lucas.mendes@email.com",
+        "telefone": "(11) 98765-4321",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cargo_objetivo": "Estágio em Desenvolvimento Backend",
+        "nivel": "Estágio",
+        "resumo": "Estudante de Ciência da Computação com sólida base em desenvolvimento backend com Python, APIs RESTful e bancos relacionais. Prática em projetos pessoais com FastAPI, Docker e testes automatizados.",
+        "skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "Git", "REST APIs", "pytest", "SQL", "Redis"],
+        "formacao": "Ciência da Computação — Mackenzie (Previsão: 12/2026)",
+        "previsao_formatura": "12/2026",
+        "termo_busca_vaga": "estágio backend python",
+    }
+
+    avaliacao = {
+        "nota_geral": 88.0,
+        "pontos_fortes": [
+            "Excelente especificação de stack moderna de backend (FastAPI, Docker, PostgreSQL).",
+            "Métricas concretas em projetos pessoais (cobertura de testes > 85%, autenticação JWT).",
+            "Clareza de objetivo profissional e compatibilidade estrita com estágio em tecnologia."
+        ],
+        "pontos_melhoria": [
+            "Adicionar menção a mensageria assíncrona ou background jobs (RabbitMQ ou Celery).",
+            "Destacar vivência com cloud computing básica (AWS EC2 ou GCP Cloud Run)."
+        ],
+        "comentario_geral": "Perfil altamente competitivo para estágio em engenharia de software e backend. Projetos bem estruturados com evidências de boas práticas de desenvolvimento."
+    }
+
+    vagas_encontradas = [
+        {
+            "titulo": "Estágio em Engenharia de Software (Python / FastAPI)",
+            "empresa": "Fintech Vektor Labs",
+            "localizacao": "São Paulo, SP (Híbrido)",
+            "descricao": "Buscamos estudante de Ciência da Computação ou Engenharia de Software com interesse em desenvolvimento backend. Requisitos: conhecimento em Python, APIs RESTful, SQL e Git. Diferenciais: Docker e testes automatizados.",
+            "link": "https://linkedin.com",
+            "score": 92,
+            "explicacao_score": "Altíssima compatibilidade: domina todas as tecnologias mandatórias (Python, FastAPI, SQL) e possui diferenciais em Docker e pytest."
+        },
+        {
+            "titulo": "Estágio em Backend Developer",
+            "empresa": "TechCorp Soluções",
+            "localizacao": "São Paulo, SP (Remoto)",
+            "descricao": "Oportunidade para atuar no time de APIs e microsserviços. Requisitos: Python ou Node.js, banco de dados relacional e controle de versão Git.",
+            "link": "https://jooble.org",
+            "score": 85,
+            "explicacao_score": "Forte alinhamento com a stack de backend solicitada e formação acadêmica adequada."
+        },
+        {
+            "titulo": "Estágio em Engenharia de Dados",
+            "empresa": "DataPulse Analytics",
+            "localizacao": "São Paulo, SP (Híbrido)",
+            "descricao": "Atuação na criação de pipelines ETL. Requisitos: lógica de programação sólida, Python e manipulação de bancos SQL.",
+            "link": "https://adzuna.com",
+            "score": 74,
+            "explicacao_score": "Boa base em Python e SQL para transição e aprendizado de pipelines ETL."
+        }
+    ]
+
+    try:
+        analise = Analise(
+            texto_curriculo=texto_cv.strip(),
+            nota_geral=88.0,
+        )
+        analise.dados_curriculo = dados_estruturados
+        analise.avaliacao = avaliacao
+        analise.vagas = vagas_encontradas
+        db.add(analise)
+        db.commit()
+        db.refresh(analise)
+        analise_id = analise.id
+    except Exception as erro:
+        logger.warning(f"Erro ao salvar perfil demo: {erro}")
+        db.rollback()
+        analise_id = None
+
+    return {
+        "id": analise_id,
+        "dados_curriculo": dados_estruturados,
+        "avaliacao": avaliacao,
+        "vagas_encontradas": vagas_encontradas,
+        "demo": True,
+    }
+
+
 @router.post("/sugestao-vaga")
 async def gerar_sugestao(dados: SugestaoRequest):
     """Gera sugestões de como melhorar o currículo para uma vaga."""

@@ -56,6 +56,8 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   // Currículo
+  carregarDemo: () => request('/curriculo/demo'),
+
   enviarCurriculo: (arquivo, localizacao) => {
     const formData = new FormData()
     formData.append('arquivo', arquivo)
