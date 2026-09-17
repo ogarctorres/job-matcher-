@@ -8,10 +8,165 @@ Implementa dois modos estritos e desacoplados:
 """
 
 import logging
+import re
 from typing import Dict, Any, Optional
 from app.core.ia_client import chamar_ia
 
 logger = logging.getLogger(__name__)
+
+
+def _normalizar_termo(termo: str) -> str:
+    """Normaliza um termo técnico para comparação resiliente."""
+    if not termo:
+        return ""
+    t = termo.strip().lower()
+    if t in ("c#", "c-sharp", "c sharp"):
+        return "c#"
+    if t in ("c++", "cpp"):
+        return "c++"
+    if t in (".net", "dotnet"):
+        return ".net"
+    if t in ("node.js", "nodejs", "node"):
+        return "node"
+    if t in ("react.js", "reactjs", "react"):
+        return "react"
+    if t in ("vue.js", "vuejs", "vue"):
+        return "vue"
+    if t in ("postgres", "postgresql"):
+        return "postgres"
+    return t
+
+
+def _termo_existe_no_corpus(termo: str, corpus_texto_lower: str, skills_set_lower: set[str]) -> bool:
+    """
+    Verifica determinísticamente se uma skill ou termo possui evidência real no perfil do candidato.
+    Verifica nas skills cadastradas e no texto bruto do currículo com word boundaries.
+    """
+    if not termo or not termo.strip():
+        return False
+
+    t_norm = _normalizar_termo(termo)
+
+    # 1. Match na lista estruturada de skills do candidato
+    if any(t_norm == _normalizar_termo(s) for s in skills_set_lower):
+        return True
+
+    # 2. Busca por palavra inteira ou expressão no texto do currículo
+    if t_norm in ("c#", "c++", ".net"):
+        escaped = re.escape(t_norm)
+        if re.search(r'(?:^|[\s,;/|])' + escaped + r'(?:[\s,;/|]|$)', corpus_texto_lower):
+            return True
+    else:
+        pattern = r'\b' + re.escape(t_norm) + r'\b'
+        if re.search(pattern, corpus_texto_lower):
+            return True
+
+    # 3. Busca por substring compactada se o termo for composto (ex: "fast api" -> "fastapi")
+    termo_compacto = re.sub(r'[\s\-_.]', '', t_norm)
+    texto_compacto = re.sub(r'[\s\-_.]', '', corpus_texto_lower)
+    if len(termo_compacto) >= 4 and termo_compacto in texto_compacto:
+        return True
+
+    return False
+
+
+def validar_skills_contra_evidencias(
+    resultado_ia: dict,
+    dados_curriculo: dict,
+    texto_curriculo: str
+) -> dict:
+    """
+    Trust Layer Anti-Alucinação do Vektor:
+    'LLM interpreta. Backend valida e decide.'
+
+    Audita determinísticamente as skills geradas pela IA contra as evidências factuais
+    do perfil do candidato.
+    - Se a IA adicionou uma skill em `skills_priorizadas` que o candidato NÃO possui:
+      -> Remove a skill de `skills_priorizadas`
+      -> Realoca para `analise_match.gaps`
+    - Sanitiza `palavras_chave`:
+      -> Se marcada como `presente_no_perfil=True` mas não existe no perfil, corrige para False
+      -> Garante que `adicionada_ao_curriculo` seja False
+    - Valida requisitos em `analise_match`:
+      -> Corrige status falsos positivos para GAP ou UNKNOWN
+    """
+    if not isinstance(resultado_ia, dict):
+        return resultado_ia
+
+    texto_lower = (texto_curriculo or "").lower()
+    skills_originais = dados_curriculo.get("skills", [])
+    skills_set_lower = {s.strip().lower() for s in skills_originais if s and isinstance(s, str)}
+
+    resumo_lower = (dados_curriculo.get("resumo") or "").lower()
+    corpus_completo = f"{texto_lower}\n{resumo_lower}"
+
+    # 1. Auditar `skills_priorizadas`
+    skills_sugeridas = resultado_ia.get("skills_priorizadas", [])
+    skills_validadas = []
+    skills_removidas_alucinadas = []
+
+    for skill in skills_sugeridas:
+        if isinstance(skill, str) and skill.strip():
+            if _termo_existe_no_corpus(skill, corpus_completo, skills_set_lower):
+                skills_validadas.append(skill)
+            else:
+                skills_removidas_alucinadas.append(skill)
+                logger.warning(
+                    f"[Trust Layer] Removida skill alucinada '{skill}' de skills_priorizadas "
+                    f"pois não há evidência no perfil do candidato."
+                )
+
+    resultado_ia["skills_priorizadas"] = skills_validadas
+
+    # 2. Se houver `analise_match`, integrar gaps e sanitizar palavras-chave
+    analise_match = resultado_ia.get("analise_match")
+    if isinstance(analise_match, dict):
+        gaps = analise_match.get("gaps", [])
+        if not isinstance(gaps, list):
+            gaps = []
+
+        gaps_lower = {g.lower() for g in gaps if isinstance(g, str)}
+        for alucinada in skills_removidas_alucinadas:
+            if alucinada.lower() not in gaps_lower:
+                gaps.append(alucinada)
+                gaps_lower.add(alucinada.lower())
+
+        analise_match["gaps"] = gaps
+
+        # Sanitizar palavras-chave
+        palavras_chave = analise_match.get("palavras_chave", [])
+        if isinstance(palavras_chave, list):
+            for item in palavras_chave:
+                if isinstance(item, dict):
+                    termo = item.get("termo", "")
+                    existe = _termo_existe_no_corpus(termo, corpus_completo, skills_set_lower)
+                    if not existe:
+                        item["presente_no_perfil"] = False
+                        item["adicionada_ao_curriculo"] = False
+
+        # Sanitizar requisitos obrigatórios e desejáveis
+        for chave_reqs in ("requisitos_obrigatorios", "requisitos_desejaveis"):
+            reqs = analise_match.get(chave_reqs, [])
+            if isinstance(reqs, list):
+                for req in reqs:
+                    if isinstance(req, dict):
+                        status = req.get("status", "").upper()
+                        evidencia = (req.get("evidencia_no_perfil") or "").lower()
+                        nome_req = req.get("requisito", "")
+
+                        nao_encontrado = any(
+                            neg in evidencia
+                            for neg in ["não encontrado", "nao encontrado", "não possui", "nao possui", "não mencionado", "nao citado", "ausente", "nenhuma"]
+                        )
+                        if status == "MATCH" and nao_encontrado:
+                            logger.warning(
+                                f"[Trust Layer] Corrigido status de '{nome_req}' de MATCH para GAP "
+                                f"devido a ausência de evidências factuais."
+                            )
+                            req["status"] = "GAP"
+                            req["evidencia_no_perfil"] = "Não evidenciado no perfil original."
+
+    return resultado_ia
 
 
 def gerar_curriculo_generico(
@@ -61,7 +216,8 @@ Texto original do currículo:
 {texto_curriculo[:3500]}
 </candidato_cv>
 """
-    return chamar_ia(prompt)
+    resultado = chamar_ia(prompt)
+    return validar_skills_contra_evidencias(resultado, dados_curriculo, texto_curriculo)
 
 
 def otimizar_curriculo_para_vaga(
@@ -173,7 +329,8 @@ Descrição e Requisitos da Vaga:
 {descricao_vaga[:4000]}
 </anuncio_vaga>
 """
-    return chamar_ia(prompt)
+    resultado = chamar_ia(prompt)
+    return validar_skills_contra_evidencias(resultado, dados_curriculo, texto_curriculo)
 
 
 def adaptar_curriculo(
