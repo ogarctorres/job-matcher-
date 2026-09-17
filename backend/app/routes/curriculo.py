@@ -1,8 +1,9 @@
 """Rotas de análise de currículo."""
 
 import logging
+from typing import Optional
 from pydantic import BaseModel
-from fastapi import APIRouter, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, HTTPException, Depends, Header, Form
 from sqlalchemy.orm import Session
 
 from app.core.config import TAMANHO_MAXIMO_MB
@@ -22,6 +23,8 @@ class SugestaoRequest(BaseModel):
 @router.post("/curriculo")
 async def enviar_curriculo(
     arquivo: UploadFile,
+    localizacao: Optional[str] = Form(None),
+    x_localizacao: Optional[str] = Header(None, alias="X-Localizacao"),
     db: Session = Depends(get_db)
 ):
     """Recebe um PDF de currículo, analisa com IA e busca vagas compatíveis."""
@@ -97,8 +100,9 @@ async def enviar_curriculo(
         }
 
     # Buscar vagas
+    loc_efetiva = (localizacao or x_localizacao or "").strip() or None
     try:
-        vagas_encontradas = buscador.buscar_vagas_do_curriculo(dados_estruturados)
+        vagas_encontradas = buscador.buscar_vagas_do_curriculo(dados_estruturados, localizacao=loc_efetiva)
     except Exception as erro:
         logger.warning(f"Erro na busca de vagas: {erro}")
         vagas_encontradas = []

@@ -35,5 +35,6 @@ def get_db():
 
 def criar_tabelas():
     """Cria todas as tabelas no banco se não existirem."""
+    import app.models  # noqa: F401
     Base.metadata.create_all(bind=engine)
 

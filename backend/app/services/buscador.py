@@ -109,10 +109,10 @@ def _buscar_via_adzuna_fallback(termo: str) -> list[dict]:
         return []
 
 
-def buscar_vagas_do_curriculo(dados_curriculo: dict) -> list[dict]:
-    """Busca vagas baseado nos dados extraídos do currículo."""
+def buscar_vagas_do_curriculo(dados_curriculo: dict, localizacao: str = None) -> list[dict]:
+    """Busca vagas baseado nos dados extraídos do currículo e localização regional."""
     termo_busca_bruto = dados_curriculo.get("termo_busca_vaga", "estagio ti")
     primeiro_termo = termo_busca_bruto.split(",")[0].strip()
     termo_busca = f"estágio {primeiro_termo}"
 
-    return buscar_vagas(termo_busca)
+    return buscar_vagas(termo_busca, localizacao=localizacao)

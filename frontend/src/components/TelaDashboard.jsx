@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
-import { TrendingUp, BarChart3, Target, Briefcase, RefreshCw } from 'lucide-react'
+import { TrendingUp, BarChart3, Target, Briefcase, RefreshCw, MapPin } from 'lucide-react'
 import { api } from '../services/api'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 
 function TelaDashboard() {
   const [stats, setStats] = useState(null)
   const [tendencias, setTendencias] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
+  const [localizacaoConfig] = useLocalStorage('jm_localizacao', 'São Paulo')
 
   useEffect(() => {
     carregarDados()
@@ -18,7 +20,7 @@ function TelaDashboard() {
     try {
       const [resStats, resTendencias] = await Promise.all([
         api.obterEstatisticas(),
-        api.obterTendencias('estagio ti'),
+        api.obterTendencias('estagio ti', localizacaoConfig),
       ])
       setStats(resStats)
       setTendencias(resTendencias)
@@ -34,7 +36,15 @@ function TelaDashboard() {
       <header className="tela-cabecalho">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <span className="rotulo">Inteligência de Mercado</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span className="rotulo" style={{ margin: 0 }}>Inteligência de Mercado</span>
+              {localizacaoConfig && (
+                <span className="sidebar-badge" style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <MapPin size={11} color="var(--accent)" />
+                  {localizacaoConfig}
+                </span>
+              )}
+            </div>
             <h1>Tendências & Demandas do Setor</h1>
             <p className="tela-descricao">
               Estatísticas consolidadas das suas análises combinadas com mineração em tempo real das vagas de tecnologia abertas no Brasil.

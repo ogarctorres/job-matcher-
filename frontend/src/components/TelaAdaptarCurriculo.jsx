@@ -14,10 +14,12 @@ import {
   ShieldCheck,
   Target,
   ChevronRight,
+  RotateCcw,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 import { useCopiaClipboard } from '../hooks/useCopiaClipboard'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 import SkillBadge from './SkillBadge'
 
 function TelaAdaptarCurriculo() {
@@ -26,7 +28,7 @@ function TelaAdaptarCurriculo() {
   const [descricaoVaga, setDescricaoVaga] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
-  const [curriculoAdaptado, setCurriculoAdaptado] = useState(null)
+  const [curriculoAdaptado, setCurriculoAdaptado] = useLocalStorage('vektor_curriculo_adaptado', null)
   const { copiado, copiar } = useCopiaClipboard()
 
   // Se veio de um clique em uma vaga recomendada, preenche automaticamente
@@ -54,6 +56,7 @@ function TelaAdaptarCurriculo() {
 
     try {
       const res = await api.adaptarCurriculo({
+        analiseId: resultado?.id,
         textoCurriculo: resultado.dados_curriculo?.resumo || '',
         dadosCurriculo: resultado.dados_curriculo || {},
         descricaoVaga: forcarGenerico ? '' : descricaoVaga,
@@ -250,6 +253,19 @@ function TelaAdaptarCurriculo() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                className="botao-secundario"
+                onClick={() => {
+                  setCurriculoAdaptado(null)
+                  setTituloVaga('')
+                  setDescricaoVaga('')
+                }}
+                style={{ fontSize: '12.5px', padding: '8px 14px' }}
+                title="Limpar e criar nova adaptação"
+              >
+                <RotateCcw size={14} />
+                <span>Nova Adaptação</span>
+              </button>
               <button
                 className="botao-secundario"
                 onClick={handleBaixarTexto}
