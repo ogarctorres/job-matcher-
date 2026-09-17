@@ -108,17 +108,43 @@ function CardVaga({ vaga, dadosCurriculo }) {
             <span>Gerar Carta</span>
           </button>
 
-          <button
-            type="button"
-            className="botao-secundario"
-            onClick={() => abrirAdaptacaoParaVaga(vaga)}
-            style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'var(--accent-border)' }}
-            title="Reescrever meu currículo direcionado aos requisitos desta vaga"
-            aria-label={`Otimizar currículo para a vaga de ${vaga.titulo}`}
-          >
-            <Wand2 size={14} color="var(--accent)" aria-hidden="true" />
-            <span>Otimizar Currículo</span>
-          </button>
+          {(() => {
+            const ehSnippetCurto = !vaga.descricao || vaga.descricao.trim().length < 150
+            return (
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={() => abrirAdaptacaoParaVaga(vaga)}
+                style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'var(--accent-border)' }}
+                title={
+                  ehSnippetCurto
+                    ? 'Esta vaga contém um resumo curto. Ao abrir, recomendamos colar a descrição completa para máxima precisão.'
+                    : 'Reescrever meu currículo direcionado aos requisitos desta vaga'
+                }
+                aria-label={`Otimizar currículo para a vaga de ${vaga.titulo}`}
+              >
+                <Wand2 size={14} color="var(--accent)" aria-hidden="true" />
+                <span>Otimizar Currículo</span>
+                {ehSnippetCurto && (
+                  <span
+                    style={{
+                      fontSize: '9.5px',
+                      fontWeight: 600,
+                      padding: '1px 5px',
+                      borderRadius: 'var(--radius-full)',
+                      backgroundColor: 'var(--warning-subtle)',
+                      color: 'var(--warning)',
+                      border: '1px solid var(--warning-border)',
+                      marginLeft: '2px',
+                    }}
+                    title="Resumo curto: cole a descrição completa para maior precisão"
+                  >
+                    Snippet
+                  </span>
+                )}
+              </button>
+            )
+          })()}
         </div>
 
         {vaga.link && (
