@@ -332,11 +332,21 @@ Descrição e Requisitos da Vaga:
     resultado = chamar_ia(prompt)
     resultado = validar_skills_contra_evidencias(resultado, dados_curriculo, texto_curriculo)
 
+    # Avaliação determinística e estruturada de critérios eliminatórios (Eligibility Engine)
+    from app.services.eligibility_engine import avaliar_elegibilidade_completa
+    alerta_completo = avaliar_elegibilidade_completa(
+        dados_curriculo=dados_curriculo,
+        texto_curriculo=texto_curriculo,
+        descricao_vaga=descricao_vaga,
+        alerta_ia=resultado.get("alerta_eliminatorio"),
+    )
+    resultado["alerta_eliminatorio"] = alerta_completo
+
     # Executa o cálculo determinístico de score e gera a memória de cálculo auditável
     from app.services.match_engine import calcular_score_deterministico
     score_final, memoria_calculo = calcular_score_deterministico(
         analise_match=resultado.get("analise_match", {}),
-        alerta_eliminatorio=resultado.get("alerta_eliminatorio", {}),
+        alerta_eliminatorio=alerta_completo,
         dados_curriculo=dados_curriculo,
         texto_curriculo=texto_curriculo,
         score_base_ia=resultado.get("score_compatibilidade"),

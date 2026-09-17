@@ -135,7 +135,7 @@ def calcular_score_deterministico(
 
     # 5. Penalização Dealbreaker / Inelegibilidade
     inelegivel = bool(alerta.get("inelegivel", False))
-    # Se houver mais de 60% de gaps nos obrigatórios, aplica teto de 60%
+    possivel_inelegibilidade = bool(alerta.get("possivel_inelegibilidade", False))
     gap_critico = (len(reqs_obrig) > 0 and (gaps_obrig / len(reqs_obrig)) >= 0.6)
 
     teto_aplicado = False
@@ -145,6 +145,10 @@ def calcular_score_deterministico(
         teto_aplicado = True
         motivo_teto = alerta.get("motivo") or "Requisito eliminatório impeditivo identificado."
         score_final = min(round(score_bruto), TETO_DEALBREAKER)
+    elif possivel_inelegibilidade:
+        teto_aplicado = True
+        motivo_teto = alerta.get("motivo") or "Possível incompatibilidade em critério eliminatório identificada."
+        score_final = min(round(score_bruto), 65)
     elif gap_critico:
         teto_aplicado = True
         motivo_teto = f"Lacuna em {gaps_obrig} de {len(reqs_obrig)} requisitos mandatórios centrais."
