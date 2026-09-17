@@ -11,7 +11,7 @@ import { useApp } from '../contexts/AppContext'
 import LogoVektor from './LogoVektor'
 
 function Header() {
-  const { telaAtiva, setTelaAtiva, resultado } = useApp()
+  const { telaAtiva, setTelaAtiva, resultado, limparAnaliseAtiva } = useApp()
   const totalVagas = resultado ? resultado.vagas_encontradas?.length || 0 : 0
 
   const itensNav = [
@@ -46,8 +46,8 @@ function Header() {
         <button
           type="button"
           className="header-logo-btn"
-          onClick={() => setTelaAtiva('upload')}
-          aria-label="Ir para a tela de envio de currículo"
+          onClick={limparAnaliseAtiva}
+          aria-label="Ir para a tela de envio de currículo e iniciar nova análise"
           style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
         >
           <LogoVektor tamanho={26} />
@@ -63,7 +63,13 @@ function Header() {
                 key={item.id}
                 type="button"
                 className={`header-nav-item ${ativo ? 'ativo' : ''} ${item.destaque ? 'item-destaque' : ''}`}
-                onClick={() => setTelaAtiva(item.id)}
+                onClick={() => {
+                  if (item.id === 'upload') {
+                    limparAnaliseAtiva()
+                  } else {
+                    setTelaAtiva(item.id)
+                  }
+                }}
                 aria-current={ativo ? 'page' : undefined}
               >
                 <Icone size={15} strokeWidth={ativo ? 2.2 : 1.8} aria-hidden="true" />
