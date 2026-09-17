@@ -330,7 +330,21 @@ Descrição e Requisitos da Vaga:
 </anuncio_vaga>
 """
     resultado = chamar_ia(prompt)
-    return validar_skills_contra_evidencias(resultado, dados_curriculo, texto_curriculo)
+    resultado = validar_skills_contra_evidencias(resultado, dados_curriculo, texto_curriculo)
+
+    # Executa o cálculo determinístico de score e gera a memória de cálculo auditável
+    from app.services.match_engine import calcular_score_deterministico
+    score_final, memoria_calculo = calcular_score_deterministico(
+        analise_match=resultado.get("analise_match", {}),
+        alerta_eliminatorio=resultado.get("alerta_eliminatorio", {}),
+        dados_curriculo=dados_curriculo,
+        texto_curriculo=texto_curriculo,
+        score_base_ia=resultado.get("score_compatibilidade"),
+    )
+    resultado["score_compatibilidade"] = score_final
+    resultado["memoria_calculo"] = memoria_calculo
+
+    return resultado
 
 
 def adaptar_curriculo(
