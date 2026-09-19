@@ -2,9 +2,12 @@
 Job Matcher API — Ponto de entrada da aplicação.
 """
 
+import time
 import logging
-from fastapi import FastAPI
+from collections import defaultdict
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from app.core.config import CORS_ORIGINS, validar_config
 from app.core.constantes import VERSAO_SISTEMA
@@ -44,6 +47,40 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# Middleware de Proteção contra Bruteforce e DoS (Rate Limiting por IP)
+# ---------------------------------------------------------------------------
+MAX_REQ_POR_MINUTO = 60
+_historico_requisicoes_ip: dict[str, list[float]] = defaultdict(list)
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    # Isenta rotas estáticas e healthchecks
+    if request.url.path in ["/", "/health", "/docs", "/openapi.json"]:
+        return await call_next(request)
+
+    agora = time.time()
+    # Extrai o IP de origem considerando proxies reversos de produção (Render / Cloudflare)
+    encaminhado = request.headers.get("x-forwarded-for")
+    client_ip = encaminhado.split(",")[0].strip() if encaminhado else (request.client.host if request.client else "127.0.0.1")
+
+    # Limpa registros expirados (janela de 60 segundos)
+    timestamps = [t for t in _historico_requisicoes_ip[client_ip] if agora - t < 60]
+    _historico_requisicoes_ip[client_ip] = timestamps
+
+    if len(timestamps) >= MAX_REQ_POR_MINUTO:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": "Limite de requisições excedido (Rate Limit: máx 60 req/min). Tente novamente em breve."
+            },
+            headers={"Retry-After": "60"},
+        )
+
+    _historico_requisicoes_ip[client_ip].append(agora)
+    return await call_next(request)
+
 
 # Rotas
 app.include_router(curriculo_router)
