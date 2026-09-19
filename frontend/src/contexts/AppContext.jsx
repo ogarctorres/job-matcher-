@@ -1,5 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import {
+  supabase,
+  isSupabaseConfigured,
+  obterPerfil,
+  deslogar,
+  salvarAnaliseCurriculo,
+  buscarHistoricoDoBanco,
+} from '../services/supabase'
 
 const AppContext = createContext(null)
 
@@ -22,7 +30,7 @@ export function AppProvider({ children }) {
     }
   }, [telaAtiva])
 
-  const [resultado, setResultado] = useLocalStorage('vektor_resultado', null)
+  const [resultado, setResultadoState] = useLocalStorage('vektor_resultado', null)
   const [vagaParaAdaptar, setVagaParaAdaptar] = useLocalStorage('vektor_vaga_adaptar', null)
   const [vagaParaDesafio, setVagaParaDesafio] = useLocalStorage('vektor_vaga_desafio', null)
   const [usuario, setUsuario] = useLocalStorage('vektor_usuario', null)
@@ -32,6 +40,80 @@ export function AppProvider({ children }) {
   const [erro, setErro] = useState(null)
   const [historico, setHistorico] = useState([])
   const [analiseSelecionada, setAnaliseSelecionada] = useState(null)
+
+  // Salva no estado local e persiste automaticamente no Supabase (se autenticado)
+  function setResultado(novoResultado) {
+    setResultadoState(novoResultado)
+    if (novoResultado && usuario?.id && isSupabaseConfigured) {
+      salvarAnaliseCurriculo(usuario.id, novoResultado).then((relatorioSalvo) => {
+        if (relatorioSalvo) {
+          setHistorico((prev) => [relatorioSalvo, ...prev.filter((r) => r.id !== relatorioSalvo.id)])
+        }
+      })
+    }
+  }
+
+  // Sincronização em tempo real de sessão com Supabase Auth
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    let montado = true
+
+    async function sincronizarSessao() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!montado) return
+        if (session?.user) {
+          const perfil = await obterPerfil(session.user.id)
+          const usuarioSupabase = {
+            id: session.user.id,
+            email: session.user.email,
+            nome: perfil?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+            avatar: (perfil?.full_name || session.user.email || 'VK').slice(0, 2).toUpperCase(),
+            avatarUrl: perfil?.avatar_url || session.user.user_metadata?.avatar_url,
+            plano: perfil?.plan || 'Gratuito',
+            membroDesde: new Date(session.user.created_at).getFullYear(),
+          }
+          setUsuario(usuarioSupabase)
+
+          // Carrega histórico relacional do usuário
+          const relatorios = await buscarHistoricoDoBanco(session.user.id)
+          if (montado && relatorios?.length > 0) {
+            setHistorico(relatorios)
+          }
+        }
+      } catch (err) {
+        console.warn('Aviso na sincronização com Supabase:', err)
+      }
+    }
+
+    sincronizarSessao()
+
+    // Listener para eventos de login, logout e OAuth redirect
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evento, session) => {
+      if (!montado) return
+      if (session?.user) {
+        const perfil = await obterPerfil(session.user.id)
+        const usuarioSupabase = {
+          id: session.user.id,
+          email: session.user.email,
+          nome: perfil?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+          avatar: (perfil?.full_name || session.user.email || 'VK').slice(0, 2).toUpperCase(),
+          avatarUrl: perfil?.avatar_url || session.user.user_metadata?.avatar_url,
+          plano: perfil?.plan || 'Gratuito',
+          membroDesde: new Date(session.user.created_at).getFullYear(),
+        }
+        setUsuario(usuarioSupabase)
+      } else if (evento === 'SIGNED_OUT') {
+        setUsuario(null)
+      }
+    })
+
+    return () => {
+      montado = false
+      subscription?.unsubscribe()
+    }
+  }, [setUsuario])
 
   function abrirModalAuth(modo = 'login') {
     setModoAuth(modo)
@@ -55,8 +137,16 @@ export function AppProvider({ children }) {
     return usuarioLogado
   }
 
-  function fazerLogout() {
-    setUsuario(null)
+  async function fazerLogout() {
+    try {
+      if (isSupabaseConfigured) {
+        await deslogar()
+      }
+    } catch (err) {
+      console.warn('Erro ao deslogar do Supabase:', err)
+    } finally {
+      setUsuario(null)
+    }
   }
 
   function abrirAdaptacaoParaVaga(vaga) {
