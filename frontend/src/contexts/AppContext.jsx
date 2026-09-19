@@ -53,11 +53,17 @@ export function AppProvider({ children }) {
     }
   }
 
+  const [carregandoSessao, setCarregandoSessao] = useState(true)
+  const [estaDesbloqueando, setEstaDesbloqueando] = useState(false)
+
   // Sincronização em tempo real de sessão com Supabase Auth
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return
-
     let montado = true
+
+    if (!isSupabaseConfigured || !supabase) {
+      setCarregandoSessao(false)
+      return
+    }
 
     async function sincronizarSessao() {
       try {
@@ -81,9 +87,15 @@ export function AppProvider({ children }) {
           if (montado && relatorios?.length > 0) {
             setHistorico(relatorios)
           }
+        } else {
+          setUsuario(null)
         }
       } catch (err) {
         console.warn('Aviso na sincronização com Supabase:', err)
+      } finally {
+        if (montado) {
+          setCarregandoSessao(false)
+        }
       }
     }
 
@@ -93,6 +105,12 @@ export function AppProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evento, session) => {
       if (!montado) return
       if (session?.user) {
+        // Dispara efeito de transição de desbloqueio
+        setEstaDesbloqueando(true)
+        setTimeout(() => {
+          if (montado) setEstaDesbloqueando(false)
+        }, 1000)
+
         const perfil = await obterPerfil(session.user.id)
         const usuarioSupabase = {
           id: session.user.id,
@@ -104,8 +122,15 @@ export function AppProvider({ children }) {
           membroDesde: new Date(session.user.created_at).getFullYear(),
         }
         setUsuario(usuarioSupabase)
+        setCarregandoSessao(false)
+
+        const relatorios = await buscarHistoricoDoBanco(session.user.id)
+        if (montado && relatorios?.length > 0) {
+          setHistorico(relatorios)
+        }
       } else if (evento === 'SIGNED_OUT') {
         setUsuario(null)
+        setCarregandoSessao(false)
       }
     })
 
@@ -199,6 +224,8 @@ export function AppProvider({ children }) {
     setVagaParaDesafio,
     abrirDesafiosParaVaga,
     limparAnaliseAtiva,
+    carregandoSessao,
+    estaDesbloqueando,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

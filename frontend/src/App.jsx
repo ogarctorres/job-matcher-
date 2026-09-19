@@ -1,8 +1,10 @@
 import { Component, lazy, Suspense } from 'react'
+import { CheckCircle2 } from 'lucide-react'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import ModalAuth from './components/ModalAuth'
 import TelaUpload from './components/TelaUpload'
+import TelaAuthGate from './components/TelaAuthGate'
 import { AppProvider, useApp } from './contexts/AppContext'
 import './App.css'
 
@@ -87,10 +89,59 @@ function TelaCarregandoFallback() {
 }
 
 function ConteudoPrincipal() {
-  const { telaAtiva } = useApp()
+  const { usuario, carregandoSessao, estaDesbloqueando, telaAtiva } = useApp()
 
+  // 1. Enquanto o Supabase valida a sessão segura no carregamento inicial
+  if (carregandoSessao) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'var(--bg-app)',
+          gap: '16px',
+        }}
+      >
+        <div
+          style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            border: '3px solid var(--border-card)',
+            borderTopColor: 'var(--accent)',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          Validando sessão segura...
+        </span>
+      </div>
+    )
+  }
+
+  // 2. Se o usuário NÃO estiver logado, bloqueia completamente o acesso ao site
+  if (!usuario) {
+    return <TelaAuthGate />
+  }
+
+  // 3. Se estiver autenticado, libera a plataforma com transição suave
   return (
-    <div className="app-layout-superior">
+    <div className={`app-layout-superior ${estaDesbloqueando ? 'app-desbloqueado-transicao' : ''}`}>
+      {/* Overlay momentâneo com badge elegante de desbloqueio */}
+      {estaDesbloqueando && (
+        <div className="desbloqueio-overlay" aria-live="assertive">
+          <div className="desbloqueio-badge">
+            <CheckCircle2 size={16} />
+            <span>Acesso liberado • Bem-vindo(a), {usuario.nome || 'Usuário'}</span>
+          </div>
+        </div>
+      )}
+
       {/* Skip Link para navegadores e leitores de tela (WCAG / Web Interface Guidelines) */}
       <a href="#conteudo-principal" className="skip-link">
         Pular para o conteúdo principal
