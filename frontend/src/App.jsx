@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import Header from './components/Header'
+import BottomNav from './components/BottomNav'
 import TelaUpload from './components/TelaUpload'
 import { AppProvider, useApp } from './contexts/AppContext'
 import './App.css'
@@ -8,6 +9,7 @@ import './App.css'
 const TelaAvaliacao = lazy(() => import('./components/TelaAvaliacao'))
 const TelaVagas = lazy(() => import('./components/TelaVagas'))
 const TelaAdaptarCurriculo = lazy(() => import('./components/TelaAdaptarCurriculo'))
+const TelaDesafios = lazy(() => import('./components/TelaDesafios'))
 const TelaDashboard = lazy(() => import('./components/TelaDashboard'))
 const TelaHistorico = lazy(() => import('./components/TelaHistorico'))
 const TelaConfiguracoes = lazy(() => import('./components/TelaConfiguracoes'))
@@ -57,12 +59,14 @@ function ConteudoPrincipal() {
           {telaAtiva === 'upload' && <TelaUpload />}
           {telaAtiva === 'avaliacao' && <TelaAvaliacao />}
           {telaAtiva === 'vagas' && <TelaVagas />}
+          {telaAtiva === 'desafios' && <TelaDesafios />}
           {telaAtiva === 'adaptar' && <TelaAdaptarCurriculo />}
           {telaAtiva === 'dashboard' && <TelaDashboard />}
           {telaAtiva === 'historico' && <TelaHistorico />}
           {telaAtiva === 'configuracoes' && <TelaConfiguracoes />}
         </Suspense>
       </main>
+      <BottomNav />
     </div>
   )
 }

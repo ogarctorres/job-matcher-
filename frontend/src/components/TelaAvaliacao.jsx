@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertCircle, ArrowRight, Sparkles } from 'lucide-react'
+import { CheckCircle2, AlertCircle, ArrowRight, Sparkles, GraduationCap, Code2, FolderGit2, ChevronRight } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import ScoreGauge from './ScoreGauge'
 
@@ -70,7 +70,7 @@ function TelaAvaliacao() {
       </div>
 
       {/* Grid de Pontos Fortes e Melhorias */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '28px' }}>
         {/* Pontos Fortes */}
         <div
           style={{
@@ -156,8 +156,108 @@ function TelaAvaliacao() {
         </div>
       </div>
 
-      {/* Ação para ver vagas */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      {/* Plano de Ação Pedagógico & Próximos Passos de Estudo */}
+      <div
+        style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-card)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '24px 28px',
+          marginBottom: '32px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <GraduationCap size={20} color="var(--accent)" />
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              Plano de Ação Pedagógico & Próximos Passos
+            </h3>
+          </div>
+          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--accent)', backgroundColor: 'var(--accent-subtle)', padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>
+            Estratégia de Carreira Vektor
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          {/* Card 1: Treino no LeetCode */}
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '18px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <Code2 size={16} color="var(--accent)" />
+                <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                  Praticar Testes Técnicos
+                </h4>
+              </div>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
+                Recrutadores de estágio costumam cobrar algoritmos básicos, manipulação de dados e consultas SQL. Exercite sua lógica no nosso módulo interativo.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => setTelaAtiva('desafios')}
+              style={{ fontSize: '12px', padding: '6px 12px', borderColor: 'var(--accent-border)' }}
+            >
+              <span>Ir para LeetCode Universitário</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
+
+          {/* Card 2: Portfólio & GitHub */}
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '18px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '12px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <FolderGit2 size={16} color="var(--success)" />
+                <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                  Fortalecer Repositórios GitHub
+                </h4>
+              </div>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
+                Para compensar os pontos de melhoria, crie ou documente projetos demonstrando testes automatizados, boas práticas de commit e documentação clara com README.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => setTelaAtiva('vagas')}
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >
+              <span>Ver Stacks em Alta nas Vagas</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Ações inferiores de Navegação */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <button className="botao-secundario" onClick={() => setTelaAtiva('desafios')}>
+          <Code2 size={15} color="var(--accent)" />
+          <span>Treinar Código no LeetCode</span>
+        </button>
+
         <button className="botao-primario" onClick={() => setTelaAtiva('vagas')}>
           <span>Explorar Vagas Compatíveis ({vagas_encontradas?.length || 0})</span>
           <ArrowRight size={16} />

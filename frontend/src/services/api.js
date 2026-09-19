@@ -142,6 +142,31 @@ export const api = {
     return request(`/tendencias/${queryString}`)
   },
 
+  // Busca Dinâmica de Vagas no Mercado
+  buscarVagasMercado: (termo, localizacao, dadosCurriculo) => {
+    return request('/vagas/buscar', {
+      method: 'POST',
+      body: JSON.stringify({
+        termo,
+        localizacao: localizacao || null,
+        dados_curriculo: dadosCurriculo || null,
+      }),
+    })
+  },
+
+  // Desafios Técnicos & LeetCode do Estudante
+  obterTrilhasDesafios: () => request('/desafios/trilhas'),
+  gerarDesafiosVaga: ({ tituloVaga, stack, descricaoVaga }) => {
+    return request('/desafios/gerar', {
+      method: 'POST',
+      body: JSON.stringify({
+        titulo_vaga: tituloVaga || null,
+        stack: stack || null,
+        descricao_vaga: descricaoVaga || null,
+      }),
+    })
+  },
+
   // Health
   checarSaude: () => request('/health'),
 }

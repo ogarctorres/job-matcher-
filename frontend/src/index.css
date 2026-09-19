@@ -36,12 +36,14 @@
   --danger-border: rgba(239, 68, 68, 0.25);
 
   /* Tipografia */
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Sombras & Profundidade */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
   --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 20px -3px rgba(59, 130, 246, 0.25);
   --shadow-modal: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
 
   /* Raios de borda */
@@ -51,7 +53,7 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Transições explícitas (em conformidade com Web Interface Guidelines - sem transition: all) */
+  /* Transições explícitas */
   --transition: color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
@@ -77,9 +79,11 @@ body {
   overflow-x: hidden;
 }
 
-/* Tipografia balanceada para títulos (evita viúvas conforme guidelines) */
+/* Tipografia amigável e acadêmica para títulos com Poppins */
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 /* Números tabulares para alinhamento uniforme em contadores e scores */

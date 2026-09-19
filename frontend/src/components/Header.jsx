@@ -2,6 +2,7 @@ import {
   FileText,
   Award,
   Briefcase,
+  Code2,
   Wand2,
   History,
   TrendingUp,
@@ -27,6 +28,11 @@ function Header() {
       label: 'Vagas',
       icone: Briefcase,
       badge: totalVagas > 0 ? totalVagas : null,
+    },
+    {
+      id: 'desafios',
+      label: 'LeetCode',
+      icone: Code2,
     },
     {
       id: 'adaptar',

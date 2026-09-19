@@ -14,6 +14,7 @@ import {
   Columns,
   FileCode,
   Calculator,
+  Code2,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
@@ -22,13 +23,14 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import SkillBadge from './SkillBadge'
 
 function TelaAdaptarCurriculo() {
-  const { resultado, vagaParaAdaptar, setVagaParaAdaptar, setTelaAtiva } = useApp()
+  const { resultado, vagaParaAdaptar, setVagaParaAdaptar, setTelaAtiva, abrirDesafiosParaVaga } = useApp()
   const [tituloVaga, setTituloVaga] = useState('')
   const [descricaoVaga, setDescricaoVaga] = useState('')
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const [curriculoAdaptado, setCurriculoAdaptado] = useLocalStorage('vektor_curriculo_adaptado', null)
   const [modoVisualizacao, setModoVisualizacao] = useState('comparador')
+  const [abaMobileComparador, setAbaMobileComparador] = useState('depois')
   const { copiado, copiar } = useCopiaClipboard()
 
   // Se veio de um clique em uma vaga recomendada, preenche automaticamente
@@ -764,150 +766,215 @@ function TelaAdaptarCurriculo() {
 
           {/* Modo 1: Comparador Lado a Lado (Antes vs Depois) */}
           {modoVisualizacao === 'comparador' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-              {/* Coluna da Esquerda: Antes (Perfil Original do PDF) */}
-              <div
-                style={{
-                  backgroundColor: 'var(--bg-card)',
-                  border: '1px solid var(--border-card)',
-                  borderRadius: 'var(--radius-xl)',
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '20px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
-                      ANTES
-                    </span>
-                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                      Perfil Base (PDF Original)
-                    </h3>
-                  </div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Dados enviados</span>
-                </div>
-
-                {/* Resumo Original */}
-                <div>
-                  <span className="rotulo" style={{ marginBottom: '6px' }}>Resumo Profissional Original</span>
-                  <div style={{ padding: '14px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                    <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)', margin: 0 }}>
-                      {resultado?.dados_curriculo?.resumo || resultado?.texto_curriculo?.slice(0, 350) || 'Resumo não estruturado no PDF original.'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Skills Originais */}
-                <div>
-                  <span className="rotulo" style={{ marginBottom: '6px' }}>Competências Identificadas no PDF</span>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {resultado?.dados_curriculo?.skills?.map((s, idx) => (
-                      <span
-                        key={idx}
-                        style={{
-                          fontSize: '11.5px',
-                          padding: '3px 9px',
-                          borderRadius: 'var(--radius-sm)',
-                          backgroundColor: 'var(--bg-surface)',
-                          color: 'var(--text-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                        }}
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cargo Objetivo Original */}
-                {resultado?.dados_curriculo?.cargo_objetivo && (
-                  <div>
-                    <span className="rotulo" style={{ marginBottom: '6px' }}>Cargo Objetivo Original</span>
-                    <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, fontWeight: 500 }}>
-                      {resultado.dados_curriculo.cargo_objetivo}
-                    </p>
-                  </div>
-                )}
+            <>
+              {/* Segmented Control visível no Mobile */}
+              <div className="comparador-segmented-mobile">
+                <button
+                  type="button"
+                  className={`comparador-tab-btn ${abaMobileComparador === 'depois' ? 'ativo' : ''}`}
+                  onClick={() => setAbaMobileComparador('depois')}
+                >
+                  ⚡ Otimizado (Vektor)
+                </button>
+                <button
+                  type="button"
+                  className={`comparador-tab-btn ${abaMobileComparador === 'antes' ? 'ativo' : ''}`}
+                  onClick={() => setAbaMobileComparador('antes')}
+                >
+                  📄 Original (PDF)
+                </button>
               </div>
 
-              {/* Coluna da Direita: Depois (Versão Otimizada Vektor) */}
-              <div
-                style={{
-                  backgroundColor: 'var(--bg-card)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: 'var(--radius-xl)',
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '20px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--success-subtle)', color: 'var(--success)', border: '1px solid var(--success-border)' }}>
-                      DEPOIS (VEKTOR)
-                    </span>
-                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                      Alinhado para a Oportunidade
-                    </h3>
+              <div className="comparador-grid">
+                {/* Coluna da Esquerda: Antes (Perfil Original do PDF) */}
+                <div
+                  className={`comparador-col-antes ${abaMobileComparador === 'antes' ? 'col-visivel-mobile' : 'col-oculta-mobile'}`}
+                  style={{
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border-card)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
+                        ANTES
+                      </span>
+                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                        Perfil Base (PDF Original)
+                      </h3>
+                    </div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Dados enviados</span>
                   </div>
-                  <span style={{ fontSize: '11px', color: 'var(--success)', fontWeight: 600 }}>100% Factual</span>
-                </div>
 
-                {/* Resumo Otimizado */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span className="rotulo" style={{ color: 'var(--success)' }}>Resumo Factual de Alto Impacto</span>
-                    <span style={{ fontSize: '10.5px', color: 'var(--success)', fontWeight: 600 }}>Palavras-chave da vaga</span>
-                  </div>
-                  <div style={{ padding: '14px', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid var(--success-border)' }}>
-                    <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-primary)', margin: 0, fontWeight: 500 }}>
-                      {curriculoAdaptado.resumo_otimizado}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Skills Priorizadas */}
-                <div>
-                  <span className="rotulo" style={{ marginBottom: '6px' }}>Skills Reais Priorizadas para a Vaga</span>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {curriculoAdaptado.skills_priorizadas?.map((s, idx) => (
-                      <SkillBadge key={idx} skill={s} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bullets de Projetos Reformulados */}
-                {curriculoAdaptado.bullets_projetos_otimizados?.length > 0 && (
+                  {/* Resumo Original */}
                   <div>
-                    <span className="rotulo" style={{ marginBottom: '8px', display: 'block' }}>Projetos Reescritos com Métricas</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {curriculoAdaptado.bullets_projetos_otimizados.map((item, idx) => (
-                        <div key={idx} style={{ padding: '10px 12px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '12.5px' }}>
-                          <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: '2px', fontSize: '12px' }}>{item.foco}</strong>
-                          <span style={{ color: 'var(--text-primary)' }}>{item.bullet_reescrito}</span>
-                        </div>
+                    <span className="rotulo" style={{ marginBottom: '6px' }}>Resumo Profissional Original</span>
+                    <div style={{ padding: '14px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                      <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-secondary)', margin: 0 }}>
+                        {resultado?.dados_curriculo?.resumo || resultado?.texto_curriculo?.slice(0, 350) || 'Resumo não estruturado no PDF original.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Skills Originais */}
+                  <div>
+                    <span className="rotulo" style={{ marginBottom: '6px' }}>Competências Identificadas no PDF</span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      {resultado?.dados_curriculo?.skills?.map((s, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            fontSize: '11.5px',
+                            padding: '3px 9px',
+                            borderRadius: 'var(--radius-sm)',
+                            backgroundColor: 'var(--bg-surface)',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                          }}
+                        >
+                          {s}
+                        </span>
                       ))}
                     </div>
                   </div>
-                )}
 
-                {/* Dicas ATS & Entrevista */}
-                {curriculoAdaptado.dicas_palavras_chave_ats?.length > 0 && (
-                  <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
-                    <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      Orientações para ATS & Entrevista:
-                    </span>
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', margin: 0 }}>
-                      {curriculoAdaptado.dicas_palavras_chave_ats.join(' • ')}
-                    </p>
+                  {/* Cargo Objetivo Original */}
+                  {resultado?.dados_curriculo?.cargo_objetivo && (
+                    <div>
+                      <span className="rotulo" style={{ marginBottom: '6px' }}>Cargo Objetivo Original</span>
+                      <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: 0, fontWeight: 500 }}>
+                        {resultado.dados_curriculo.cargo_objetivo}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Coluna da Direita: Depois (Versão Otimizada Vektor) */}
+                <div
+                  className={`comparador-col-depois ${abaMobileComparador === 'depois' ? 'col-visivel-mobile' : 'col-oculta-mobile'}`}
+                  style={{
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    borderRadius: 'var(--radius-xl)',
+                    padding: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '20px',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--success-subtle)', color: 'var(--success)', border: '1px solid var(--success-border)' }}>
+                        DEPOIS (VEKTOR)
+                      </span>
+                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                        Alinhado para a Oportunidade
+                      </h3>
+                    </div>
+                    <span style={{ fontSize: '11px', color: 'var(--success)', fontWeight: 600 }}>100% Factual</span>
                   </div>
-                )}
+
+                  {/* Resumo Otimizado */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span className="rotulo" style={{ color: 'var(--success)' }}>Resumo Factual de Alto Impacto</span>
+                      <span style={{ fontSize: '10.5px', color: 'var(--success)', fontWeight: 600 }}>Palavras-chave da vaga</span>
+                    </div>
+                    <div style={{ padding: '14px', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderRadius: 'var(--radius-md)', border: '1px solid var(--success-border)' }}>
+                      <p style={{ fontSize: '13px', lineHeight: '1.6', color: 'var(--text-primary)', margin: 0, fontWeight: 500 }}>
+                        {curriculoAdaptado.resumo_otimizado}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Skills Priorizadas */}
+                  <div>
+                    <span className="rotulo" style={{ marginBottom: '6px' }}>Skills Reais Priorizadas para a Vaga</span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      {curriculoAdaptado.skills_priorizadas?.map((s, idx) => (
+                        <SkillBadge key={idx} skill={s} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Bullets de Projetos Reformulados */}
+                  {curriculoAdaptado.bullets_projetos_otimizados?.length > 0 && (
+                    <div>
+                      <span className="rotulo" style={{ marginBottom: '8px', display: 'block' }}>Projetos Reescritos com Métricas</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {curriculoAdaptado.bullets_projetos_otimizados.map((item, idx) => (
+                          <div key={idx} style={{ padding: '10px 12px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '12.5px' }}>
+                            <strong style={{ color: 'var(--accent)', display: 'block', marginBottom: '2px', fontSize: '12px' }}>{item.foco}</strong>
+                            <span style={{ color: 'var(--text-primary)' }}>{item.bullet_reescrito}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dicas ATS & Entrevista */}
+                  {curriculoAdaptado.dicas_palavras_chave_ats?.length > 0 && (
+                    <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        Orientações para ATS & Entrevista:
+                      </span>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', margin: 0 }}>
+                        {curriculoAdaptado.dicas_palavras_chave_ats.join(' • ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Callout de Preparação Técnica com LeetCode */}
+          <div
+            style={{
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-card)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '20px 24px',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <Code2 size={22} color="var(--accent)" />
+              <div>
+                <strong style={{ fontSize: '14px', color: 'var(--text-primary)', display: 'block' }}>
+                  Pronto para a Entrevista Técnica desta vaga?
+                </strong>
+                <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                  Exercite os tópicos e a stack solicitada por este recrutador no LeetCode Universitário.
+                </span>
               </div>
             </div>
-          )}
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => {
+                abrirDesafiosParaVaga({
+                  titulo: tituloVaga || 'Vaga Selecionada',
+                  descricao: descricaoVaga,
+                  empresa: vagaParaAdaptar?.empresa || 'Empresa Alvo',
+                })
+              }}
+              style={{ fontSize: '12.5px', padding: '8px 16px', borderColor: 'var(--accent-border)' }}
+            >
+              <Code2 size={14} color="var(--accent)" />
+              <span>Treinar Desafios desta Vaga</span>
+            </button>
+          </div>
 
           {/* Modo 2: Visualização Completa em Markdown */}
           {modoVisualizacao === 'markdown' && (

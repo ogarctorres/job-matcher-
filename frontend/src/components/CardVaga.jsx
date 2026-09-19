@@ -8,13 +8,14 @@ import {
   ChevronDown,
   ChevronUp,
   Wand2,
+  Code2,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 import ModalCarta from './ModalCarta'
 
 function CardVaga({ vaga, dadosCurriculo }) {
-  const { abrirAdaptacaoParaVaga } = useApp()
+  const { abrirAdaptacaoParaVaga, abrirDesafiosParaVaga } = useApp()
   const [sugestoes, setSugestoes] = useState(null)
   const [carregandoSugestao, setCarregandoSugestao] = useState(false)
   const [erroSugestao, setErroSugestao] = useState(null)
@@ -145,6 +146,18 @@ function CardVaga({ vaga, dadosCurriculo }) {
               </button>
             )
           })()}
+
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => abrirDesafiosParaVaga(vaga)}
+            aria-label={`Treinar desafios técnicos para a vaga de ${vaga.titulo}`}
+            style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'rgba(59, 130, 246, 0.4)' }}
+            title="Praticar exercícios técnicos recomendados para esta vaga no módulo LeetCode"
+          >
+            <Code2 size={14} color="#60a5fa" aria-hidden="true" />
+            <span>Treinar no LeetCode</span>
+          </button>
         </div>
 
         {vaga.link && (

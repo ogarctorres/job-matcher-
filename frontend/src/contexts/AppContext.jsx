@@ -24,6 +24,7 @@ export function AppProvider({ children }) {
 
   const [resultado, setResultado] = useLocalStorage('vektor_resultado', null)
   const [vagaParaAdaptar, setVagaParaAdaptar] = useLocalStorage('vektor_vaga_adaptar', null)
+  const [vagaParaDesafio, setVagaParaDesafio] = useLocalStorage('vektor_vaga_desafio', null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const [historico, setHistorico] = useState([])
@@ -34,9 +35,15 @@ export function AppProvider({ children }) {
     setTelaAtiva('adaptar')
   }
 
+  function abrirDesafiosParaVaga(vaga) {
+    setVagaParaDesafio(vaga)
+    setTelaAtiva('desafios')
+  }
+
   function limparAnaliseAtiva() {
     setResultado(null)
     setVagaParaAdaptar(null)
+    setVagaParaDesafio(null)
     setTelaAtiva('upload')
   }
 
@@ -56,6 +63,9 @@ export function AppProvider({ children }) {
     vagaParaAdaptar,
     setVagaParaAdaptar,
     abrirAdaptacaoParaVaga,
+    vagaParaDesafio,
+    setVagaParaDesafio,
+    abrirDesafiosParaVaga,
     limparAnaliseAtiva,
   }
 
