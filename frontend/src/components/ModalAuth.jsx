@@ -8,16 +8,12 @@ import {
   CheckCircle2,
   ShieldCheck,
   AlertCircle,
-  KeyRound,
-  Globe,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import {
-  isSupabaseConfigured,
   entrarComEmail,
   cadastrarComEmail,
   entrarComGoogle,
-  salvarConfiguracaoSupabase,
 } from '../services/supabase'
 import LogoVektor from './LogoVektor'
 
@@ -31,49 +27,21 @@ function ModalAuth() {
   const [erroAuth, setErroAuth] = useState(null)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
 
-  // Configuração rápida de Supabase caso ainda não exista .env
-  const [mostrarConfigSupabase, setMostrarConfigSupabase] = useState(false)
-  const [supabaseUrlInput, setSupabaseUrlInput] = useState('')
-  const [supabaseKeyInput, setSupabaseKeyInput] = useState('')
-  const [salvandoConfig, setSalvandoConfig] = useState(false)
-
   useEffect(() => {
     if (modalAuthAberta) {
       setSucesso(false)
       setCarregando(false)
       setErroAuth(null)
       setAvisoConfirmacao(false)
-      setMostrarConfigSupabase(!isSupabaseConfigured)
     }
   }, [modalAuthAberta, modoAuth])
 
   if (!modalAuthAberta) return null
 
-  function handleSalvarSupabase(e) {
-    e.preventDefault()
-    if (!supabaseUrlInput.trim() || !supabaseKeyInput.trim()) {
-      setErroAuth('Preencha a URL e a Anon Key do seu projeto Supabase.')
-      return
-    }
-    if (!supabaseUrlInput.includes('.supabase.co')) {
-      setErroAuth('A URL do Supabase deve ser no formato https://seu-projeto.supabase.co')
-      return
-    }
-    setSalvandoConfig(true)
-    salvarConfiguracaoSupabase(supabaseUrlInput.trim(), supabaseKeyInput.trim())
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     setCarregando(true)
     setErroAuth(null)
-
-    if (!isSupabaseConfigured) {
-      setCarregando(false)
-      setMostrarConfigSupabase(true)
-      setErroAuth('Para cadastrar sua conta com envio de e-mail de ativação, conecte o Supabase abaixo ou adicione no arquivo frontend/.env.')
-      return
-    }
 
     try {
       if (modoAuth === 'login') {
@@ -82,7 +50,6 @@ function ModalAuth() {
         setTimeout(() => fecharModalAuth(), 600)
       } else {
         const res = await cadastrarComEmail(email.trim(), senha, nome.trim())
-        // Se o Supabase exigir confirmação por e-mail
         if (res?.user && !res?.session) {
           setAvisoConfirmacao(true)
         } else {
@@ -109,13 +76,6 @@ function ModalAuth() {
   async function handleGoogleLogin() {
     setCarregando(true)
     setErroAuth(null)
-
-    if (!isSupabaseConfigured) {
-      setCarregando(false)
-      setMostrarConfigSupabase(true)
-      setErroAuth('Para autenticar com sua conta do Google, conecte o Supabase abaixo ou adicione no arquivo frontend/.env.')
-      return
-    }
 
     try {
       await entrarComGoogle()
@@ -245,89 +205,6 @@ function ModalAuth() {
           </div>
         ) : (
           <>
-            {/* Aviso quando Supabase ainda não está conectado */}
-            {!isSupabaseConfigured && mostrarConfigSupabase && (
-              <div
-                style={{
-                  backgroundColor: 'rgba(234, 179, 8, 0.06)',
-                  border: '1px solid rgba(234, 179, 8, 0.25)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '14px',
-                  marginBottom: '16px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <AlertCircle size={16} color="#eab308" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <h5 style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 3px' }}>
-                      Conexão com Supabase necessária
-                    </h5>
-                    <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-                      Para que o e-mail de ativação chegue na sua caixa de entrada e sua conta seja registrada, cole suas chaves abaixo ou crie o arquivo <code>frontend/.env</code>.
-                    </p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSalvarSupabase} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ position: 'relative' }}>
-                    <Globe size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
-                    <input
-                      type="url"
-                      required
-                      placeholder="https://seu-projeto.supabase.co"
-                      value={supabaseUrlInput}
-                      onChange={(e) => setSupabaseUrlInput(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '7px 10px 7px 30px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-card)',
-                        backgroundColor: 'var(--bg-app)',
-                        color: 'var(--text-primary)',
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-mono)',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                  <div style={{ position: 'relative' }}>
-                    <KeyRound size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
-                    <input
-                      type="password"
-                      required
-                      placeholder="Chave pública anon (eyJhbG...)"
-                      value={supabaseKeyInput}
-                      onChange={(e) => setSupabaseKeyInput(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '7px 10px 7px 30px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-card)',
-                        backgroundColor: 'var(--bg-app)',
-                        color: 'var(--text-primary)',
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-mono)',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="botao-primario"
-                    disabled={salvandoConfig}
-                    style={{
-                      padding: '7px 12px',
-                      fontSize: '11.5px',
-                      fontWeight: 600,
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {salvandoConfig ? 'Conectando...' : '✓ Conectar Supabase & Habilitar E-mails'}
-                  </button>
-                </form>
-              </div>
-            )}
-
             {/* Login com Google OAuth */}
             <button
               type="button"
@@ -556,16 +433,16 @@ function ModalAuth() {
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                backgroundColor: isSupabaseConfigured ? 'var(--success)' : 'var(--warning)',
+                backgroundColor: 'var(--success)',
               }}
             />
-            <span style={{ color: isSupabaseConfigured ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
-              {isSupabaseConfigured ? 'Supabase Auth & RLS Ativos' : 'Modo Demonstração (Configure o .env)'}
+            <span style={{ color: 'var(--text-secondary)' }}>
+              ● Supabase Auth & RLS Ativos
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
             <ShieldCheck size={12} color="var(--success)" />
-            <span>Credenciais isoladas por variáveis de ambiente.</span>
+            <span>Credenciais isoladas e criptografadas.</span>
           </div>
         </div>
       </div>

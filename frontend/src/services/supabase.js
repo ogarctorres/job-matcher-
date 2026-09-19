@@ -1,14 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
 export function getSupabaseCredentials() {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL || ''
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || ''
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_PUBLISHABLE_KEY || ''
+
+  // Fallback nativo oficial do Vektor (URL pública e Publishable Key do cliente Supabase)
+  const defaultUrl = 'https://motfutoaozcbsllnxstp.supabase.co'
+  const defaultKey = 'sb_publishable_xS4I92oBd5qxL6QtBp0WVQ_d_rUtZ6E'
 
   const localUrl = typeof window !== 'undefined' ? window.localStorage.getItem('vektor_supabase_url') || '' : ''
   const localKey = typeof window !== 'undefined' ? window.localStorage.getItem('vektor_supabase_key') || '' : ''
 
-  const url = (envUrl && !envUrl.includes('placeholder') && !envUrl.includes('seu-projeto') ? envUrl : localUrl)?.trim()
-  const key = (envKey && !envKey.includes('placeholder') && !envKey.includes('sua-chave') ? envKey : localKey)?.trim()
+  const url = (envUrl && !envUrl.includes('placeholder') && !envUrl.includes('seu-projeto') ? envUrl : localUrl || defaultUrl)?.trim()
+  const key = (envKey && !envKey.includes('placeholder') && !envKey.includes('sua-chave') ? envKey : localKey || defaultKey)?.trim()
 
   const isConfigured = Boolean(
     url &&

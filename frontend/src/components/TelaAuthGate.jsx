@@ -6,17 +6,13 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertCircle,
-  KeyRound,
-  Globe,
   Sparkles,
   ShieldCheck,
 } from 'lucide-react'
 import {
-  isSupabaseConfigured,
   entrarComEmail,
   cadastrarComEmail,
   entrarComGoogle,
-  salvarConfiguracaoSupabase,
 } from '../services/supabase'
 import LogoVektor from './LogoVektor'
 
@@ -30,42 +26,15 @@ function TelaAuthGate() {
   const [erroAuth, setErroAuth] = useState(null)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
 
-  // Configuração rápida caso o Supabase não esteja conectado
-  const [mostrarConfigSupabase, setMostrarConfigSupabase] = useState(!isSupabaseConfigured)
-  const [supabaseUrlInput, setSupabaseUrlInput] = useState('')
-  const [supabaseKeyInput, setSupabaseKeyInput] = useState('')
-  const [salvandoConfig, setSalvandoConfig] = useState(false)
-
   useEffect(() => {
     setErroAuth(null)
     setAvisoConfirmacao(false)
   }, [modo])
 
-  function handleSalvarSupabase(e) {
-    e.preventDefault()
-    if (!supabaseUrlInput.trim() || !supabaseKeyInput.trim()) {
-      setErroAuth('Preencha a URL e a Anon Key do seu projeto Supabase.')
-      return
-    }
-    if (!supabaseUrlInput.includes('.supabase.co')) {
-      setErroAuth('A URL do Supabase deve ser no formato https://seu-projeto.supabase.co')
-      return
-    }
-    setSalvandoConfig(true)
-    salvarConfiguracaoSupabase(supabaseUrlInput.trim(), supabaseKeyInput.trim())
-  }
-
   async function handleSubmit(e) {
     e.preventDefault()
     setCarregando(true)
     setErroAuth(null)
-
-    if (!isSupabaseConfigured) {
-      setCarregando(false)
-      setMostrarConfigSupabase(true)
-      setErroAuth('Conecte o Supabase abaixo ou adicione as chaves no frontend/.env para autenticar.')
-      return
-    }
 
     try {
       if (modo === 'login') {
@@ -87,7 +56,7 @@ function TelaAuthGate() {
       } else if (msg.includes('Password should be at least')) {
         msg = 'A senha deve conter no mínimo 6 caracteres.'
       } else if (msg.includes('User already registered')) {
-        msg = 'Este e-mail já está cadastrado. Tente entrar.'
+        msg = 'Este e-mail já está cadastrado. Tente entrar na sua conta.'
       }
       setErroAuth(msg)
     } finally {
@@ -98,13 +67,6 @@ function TelaAuthGate() {
   async function handleGoogleLogin() {
     setCarregando(true)
     setErroAuth(null)
-
-    if (!isSupabaseConfigured) {
-      setCarregando(false)
-      setMostrarConfigSupabase(true)
-      setErroAuth('Conecte o Supabase abaixo para autenticar com Google.')
-      return
-    }
 
     try {
       await entrarComGoogle()
@@ -191,56 +153,6 @@ function TelaAuthGate() {
             </div>
           ) : (
             <>
-              {/* Se Supabase não estiver configurado, exibir formulário de conexão rápida */}
-              {!isSupabaseConfigured && mostrarConfigSupabase && (
-                <div className="auth-gate-alerta-config">
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                    <AlertCircle size={16} color="#eab308" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div>
-                      <h4 style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 3px' }}>
-                        Conexão Supabase Pendente
-                      </h4>
-                      <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-                        Para enviar o e-mail real de confirmação e registrar sua conta, cole suas chaves abaixo:
-                      </p>
-                    </div>
-                  </div>
-
-                  <form onSubmit={handleSalvarSupabase} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ position: 'relative' }}>
-                      <Globe size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
-                      <input
-                        type="url"
-                        required
-                        placeholder="https://seu-projeto.supabase.co"
-                        value={supabaseUrlInput}
-                        onChange={(e) => setSupabaseUrlInput(e.target.value)}
-                        className="auth-gate-input-config"
-                      />
-                    </div>
-                    <div style={{ position: 'relative' }}>
-                      <KeyRound size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
-                      <input
-                        type="password"
-                        required
-                        placeholder="Chave pública anon (sb_publishable_... ou eyJ...)"
-                        value={supabaseKeyInput}
-                        onChange={(e) => setSupabaseKeyInput(e.target.value)}
-                        className="auth-gate-input-config"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="botao-primario"
-                      disabled={salvandoConfig}
-                      style={{ padding: '7px 12px', fontSize: '11.5px', justifyContent: 'center' }}
-                    >
-                      {salvandoConfig ? 'Conectando...' : '✓ Conectar Supabase & Habilitar'}
-                    </button>
-                  </form>
-                </div>
-              )}
-
               {/* Botão Oficial Google OAuth */}
               <button
                 type="button"
@@ -374,12 +286,12 @@ function TelaAuthGate() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  backgroundColor: isSupabaseConfigured ? 'var(--success)' : 'var(--warning)',
+                  backgroundColor: 'var(--success)',
                   display: 'inline-block',
                 }}
               />
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                {isSupabaseConfigured ? 'Supabase Auth & PostgreSQL Conectados' : 'Aguardando Chaves do Supabase'}
+                ● Conexão Segura Supabase Ativa
               </span>
             </div>
           </footer>
