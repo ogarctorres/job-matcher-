@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react'
-import { X, Lock, Mail, User, ArrowRight, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react'
+import {
+  X,
+  Lock,
+  Mail,
+  User,
+  ArrowRight,
+  CheckCircle2,
+  ShieldCheck,
+  AlertCircle,
+  KeyRound,
+  Globe,
+} from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import {
   isSupabaseConfigured,
   entrarComEmail,
   cadastrarComEmail,
   entrarComGoogle,
+  salvarConfiguracaoSupabase,
 } from '../services/supabase'
 import LogoVektor from './LogoVektor'
 
 function ModalAuth() {
-  const { modalAuthAberta, fecharModalAuth, modoAuth, setModoAuth, fazerLogin } = useApp()
+  const { modalAuthAberta, fecharModalAuth, modoAuth, setModoAuth } = useApp()
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -19,63 +31,78 @@ function ModalAuth() {
   const [erroAuth, setErroAuth] = useState(null)
   const [avisoConfirmacao, setAvisoConfirmacao] = useState(false)
 
+  // Configuração rápida de Supabase caso ainda não exista .env
+  const [mostrarConfigSupabase, setMostrarConfigSupabase] = useState(false)
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState('')
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState('')
+  const [salvandoConfig, setSalvandoConfig] = useState(false)
+
   useEffect(() => {
     if (modalAuthAberta) {
       setSucesso(false)
       setCarregando(false)
       setErroAuth(null)
       setAvisoConfirmacao(false)
+      setMostrarConfigSupabase(!isSupabaseConfigured)
     }
   }, [modalAuthAberta, modoAuth])
 
   if (!modalAuthAberta) return null
+
+  function handleSalvarSupabase(e) {
+    e.preventDefault()
+    if (!supabaseUrlInput.trim() || !supabaseKeyInput.trim()) {
+      setErroAuth('Preencha a URL e a Anon Key do seu projeto Supabase.')
+      return
+    }
+    if (!supabaseUrlInput.includes('.supabase.co')) {
+      setErroAuth('A URL do Supabase deve ser no formato https://seu-projeto.supabase.co')
+      return
+    }
+    setSalvandoConfig(true)
+    salvarConfiguracaoSupabase(supabaseUrlInput.trim(), supabaseKeyInput.trim())
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setCarregando(true)
     setErroAuth(null)
 
-    if (isSupabaseConfigured) {
-      try {
-        if (modoAuth === 'login') {
-          await entrarComEmail(email.trim(), senha)
-          setSucesso(true)
-          setTimeout(() => fecharModalAuth(), 600)
-        } else {
-          const res = await cadastrarComEmail(email.trim(), senha, nome.trim())
-          // Se o Supabase exigir confirmação por e-mail
-          if (res?.user && !res?.session) {
-            setAvisoConfirmacao(true)
-          } else {
-            setSucesso(true)
-            setTimeout(() => fecharModalAuth(), 700)
-          }
-        }
-      } catch (err) {
-        console.error('Erro na autenticação Supabase:', err)
-        let msg = err.message || 'Erro ao processar autenticação.'
-        if (msg.includes('Invalid login credentials')) {
-          msg = 'E-mail ou senha incorretos. Verifique seus dados.'
-        } else if (msg.includes('Password should be at least')) {
-          msg = 'A senha deve conter no mínimo 6 caracteres.'
-        } else if (msg.includes('User already registered')) {
-          msg = 'Este e-mail já está cadastrado. Tente fazer login.'
-        }
-        setErroAuth(msg)
-      } finally {
-        setCarregando(false)
-      }
-    } else {
-      // Modo Demonstração (quando .env ainda não foi configurado pelo usuário)
-      setTimeout(() => {
-        fazerLogin({
-          nome: nome.trim() || (modoAuth === 'login' ? 'Lucas Mendes' : 'Estudante Vektor'),
-          email: email.trim() || 'estudante@vektor.com',
-          plano: 'Gratuito',
-        })
+    if (!isSupabaseConfigured) {
+      setCarregando(false)
+      setMostrarConfigSupabase(true)
+      setErroAuth('Para cadastrar sua conta com envio de e-mail de ativação, conecte o Supabase abaixo ou adicione no arquivo frontend/.env.')
+      return
+    }
+
+    try {
+      if (modoAuth === 'login') {
+        await entrarComEmail(email.trim(), senha)
         setSucesso(true)
-        setTimeout(() => fecharModalAuth(), 700)
-      }, 500)
+        setTimeout(() => fecharModalAuth(), 600)
+      } else {
+        const res = await cadastrarComEmail(email.trim(), senha, nome.trim())
+        // Se o Supabase exigir confirmação por e-mail
+        if (res?.user && !res?.session) {
+          setAvisoConfirmacao(true)
+        } else {
+          setSucesso(true)
+          setTimeout(() => fecharModalAuth(), 700)
+        }
+      }
+    } catch (err) {
+      console.error('Erro na autenticação Supabase:', err)
+      let msg = err.message || 'Erro ao processar autenticação.'
+      if (msg.includes('Invalid login credentials')) {
+        msg = 'E-mail ou senha incorretos. Verifique seus dados.'
+      } else if (msg.includes('Password should be at least')) {
+        msg = 'A senha deve conter no mínimo 6 caracteres.'
+      } else if (msg.includes('User already registered')) {
+        msg = 'Este e-mail já está cadastrado. Tente fazer login.'
+      }
+      setErroAuth(msg)
+    } finally {
+      setCarregando(false)
     }
   }
 
@@ -83,26 +110,19 @@ function ModalAuth() {
     setCarregando(true)
     setErroAuth(null)
 
-    if (isSupabaseConfigured) {
-      try {
-        await entrarComGoogle()
-      } catch (err) {
-        console.error('Erro Google OAuth:', err)
-        setErroAuth(err.message || 'Erro ao iniciar autenticação com Google.')
-        setCarregando(false)
-      }
-    } else {
-      // Modo Demonstração
-      setTimeout(() => {
-        fazerLogin({
-          nome: 'Lucas Mendes',
-          email: 'lucas.mendes@gmail.com',
-          avatar: 'LM',
-          plano: 'Gratuito',
-        })
-        setSucesso(true)
-        setTimeout(() => fecharModalAuth(), 600)
-      }, 450)
+    if (!isSupabaseConfigured) {
+      setCarregando(false)
+      setMostrarConfigSupabase(true)
+      setErroAuth('Para autenticar com sua conta do Google, conecte o Supabase abaixo ou adicione no arquivo frontend/.env.')
+      return
+    }
+
+    try {
+      await entrarComGoogle()
+    } catch (err) {
+      console.error('Erro Google OAuth:', err)
+      setErroAuth(err.message || 'Erro ao iniciar autenticação com Google.')
+      setCarregando(false)
     }
   }
 
@@ -181,24 +201,133 @@ function ModalAuth() {
         {avisoConfirmacao ? (
           <div
             style={{
-              backgroundColor: 'var(--success-subtle)',
-              border: '1px solid var(--success-border)',
+              backgroundColor: 'rgba(34, 197, 94, 0.08)',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
               borderRadius: 'var(--radius-lg)',
-              padding: '16px',
+              padding: '24px 20px',
               textAlign: 'center',
               marginBottom: '16px',
             }}
           >
-            <CheckCircle2 size={24} color="var(--success)" style={{ margin: '0 auto 8px' }} />
-            <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-              Conta criada com sucesso!
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 12px',
+              }}
+            >
+              <CheckCircle2 size={24} color="var(--success)" />
+            </div>
+            <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+              Quase pronto! Confirme seu e-mail
             </h4>
-            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
-              Enviamos um e-mail de confirmação para <strong>{email}</strong>. Clique no link para ativar seu acesso.
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: '1.45' }}>
+              Enviamos um e-mail de ativação para <strong>{email}</strong>. Abra sua caixa de entrada e clique no link para liberar seu acesso à plataforma.
             </p>
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={fecharModalAuth}
+              style={{
+                width: '100%',
+                padding: '9px 16px',
+                fontSize: '13px',
+                justifyContent: 'center',
+              }}
+            >
+              Entendido, vou verificar meu e-mail
+            </button>
           </div>
         ) : (
           <>
+            {/* Aviso quando Supabase ainda não está conectado */}
+            {!isSupabaseConfigured && mostrarConfigSupabase && (
+              <div
+                style={{
+                  backgroundColor: 'rgba(234, 179, 8, 0.06)',
+                  border: '1px solid rgba(234, 179, 8, 0.25)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '14px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <AlertCircle size={16} color="#eab308" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <h5 style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 3px' }}>
+                      Conexão com Supabase necessária
+                    </h5>
+                    <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
+                      Para que o e-mail de ativação chegue na sua caixa de entrada e sua conta seja registrada, cole suas chaves abaixo ou crie o arquivo <code>frontend/.env</code>.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSalvarSupabase} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <Globe size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://seu-projeto.supabase.co"
+                      value={supabaseUrlInput}
+                      onChange={(e) => setSupabaseUrlInput(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '7px 10px 7px 30px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-card)',
+                        backgroundColor: 'var(--bg-app)',
+                        color: 'var(--text-primary)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <KeyRound size={13} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '9px' }} />
+                    <input
+                      type="password"
+                      required
+                      placeholder="Chave pública anon (eyJhbG...)"
+                      value={supabaseKeyInput}
+                      onChange={(e) => setSupabaseKeyInput(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '7px 10px 7px 30px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-card)',
+                        backgroundColor: 'var(--bg-app)',
+                        color: 'var(--text-primary)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-mono)',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="botao-primario"
+                    disabled={salvandoConfig}
+                    style={{
+                      padding: '7px 12px',
+                      fontSize: '11.5px',
+                      fontWeight: 600,
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {salvandoConfig ? 'Conectando...' : '✓ Conectar Supabase & Habilitar E-mails'}
+                  </button>
+                </form>
+              </div>
+            )}
+
             {/* Login com Google OAuth */}
             <button
               type="button"
@@ -292,7 +421,7 @@ function ModalAuth() {
                     <input
                       type="text"
                       required
-                      placeholder="Lucas Mendes"
+                      placeholder="Ex: Seu Nome Completo"
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
                       style={{
@@ -312,14 +441,14 @@ function ModalAuth() {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  E-mail Institucional ou Pessoal
+                  E-mail Profissional ou Pessoal
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '11px' }} />
                   <input
                     type="email"
                     required
-                    placeholder="seu.email@universidade.edu.br"
+                    placeholder="seu.email@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{

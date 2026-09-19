@@ -125,10 +125,13 @@ export function AppProvider({ children }) {
   }
 
   function fazerLogin(dados = {}) {
+    if (!dados || (!dados.email && !dados.nome)) return null
+    const nome = dados.nome || dados.email?.split('@')[0] || 'Usuário'
+    const email = dados.email || ''
     const usuarioLogado = {
-      nome: dados.nome || 'Lucas Mendes',
-      email: dados.email || 'lucas.mendes@email.com',
-      avatar: (dados.nome || 'LM').slice(0, 2).toUpperCase(),
+      nome,
+      email,
+      avatar: (nome || 'VK').slice(0, 2).toUpperCase(),
       plano: dados.plano || 'Gratuito',
       membroDesde: '2026',
     }

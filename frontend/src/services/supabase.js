@@ -1,18 +1,30 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+export function getSupabaseCredentials() {
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || ''
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-  supabaseAnonKey &&
-  supabaseUrl.trim() !== '' &&
-  supabaseAnonKey.trim() !== '' &&
-  !supabaseUrl.includes('placeholder')
-)
+  const localUrl = typeof window !== 'undefined' ? window.localStorage.getItem('vektor_supabase_url') || '' : ''
+  const localKey = typeof window !== 'undefined' ? window.localStorage.getItem('vektor_supabase_key') || '' : ''
+
+  const url = (envUrl && !envUrl.includes('placeholder') && !envUrl.includes('seu-projeto') ? envUrl : localUrl)?.trim()
+  const key = (envKey && !envKey.includes('placeholder') && !envKey.includes('sua-chave') ? envKey : localKey)?.trim()
+
+  const isConfigured = Boolean(
+    url &&
+    key &&
+    url.startsWith('https://') &&
+    url.includes('.supabase.co')
+  )
+
+  return { url, key, isConfigured }
+}
+
+const creds = getSupabaseCredentials()
+export const isSupabaseConfigured = creds.isConfigured
 
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+  ? createClient(creds.url, creds.key, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -22,14 +34,36 @@ export const supabase = isSupabaseConfigured
   : null
 
 /**
+ * Salva credenciais do Supabase no navegador e reinicia o cliente
+ */
+export function salvarConfiguracaoSupabase(url, key) {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem('vektor_supabase_url', (url || '').trim())
+    window.localStorage.setItem('vektor_supabase_key', (key || '').trim())
+    window.location.reload()
+  }
+}
+
+/**
+ * Limpa credenciais locais
+ */
+export function limparConfiguracaoSupabase() {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('vektor_supabase_url')
+    window.localStorage.removeItem('vektor_supabase_key')
+    window.location.reload()
+  }
+}
+
+/**
  * Autentica o usuário com e-mail e senha no Supabase
  */
 export async function entrarComEmail(email, senha) {
-  if (!isSupabaseConfigured) {
-    throw new Error('Supabase não configurado. Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env.')
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase não conectado. Configure sua URL e Chave Anon para realizar login real.')
   }
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: email.trim(),
     password: senha,
   })
   if (error) throw error
@@ -37,20 +71,22 @@ export async function entrarComEmail(email, senha) {
 }
 
 /**
- * Cadastra um novo usuário com e-mail, senha e nome completo
+ * Cadastra um novo usuário com e-mail, senha e nome completo,
+ * disparando o envio de e-mail de confirmação real pelo Supabase.
  */
 export async function cadastrarComEmail(email, senha, nomeCompleto) {
-  if (!isSupabaseConfigured) {
-    throw new Error('Supabase não configurado. Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env.')
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase não conectado. Configure sua URL e Chave Anon para cadastrar sua conta.')
   }
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: email.trim(),
     password: senha,
     options: {
       data: {
-        full_name: nomeCompleto,
+        full_name: (nomeCompleto || '').trim(),
         plan: 'Gratuito',
       },
+      emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
     },
   })
   if (error) throw error
@@ -58,16 +94,16 @@ export async function cadastrarComEmail(email, senha, nomeCompleto) {
 }
 
 /**
- * Inicia o fluxo de autenticação com Google OAuth
+ * Inicia o fluxo de autenticação com Google OAuth oficial
  */
 export async function entrarComGoogle() {
-  if (!isSupabaseConfigured) {
-    throw new Error('Supabase não configurado. Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env.')
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase não conectado. Configure o Supabase para utilizar Google OAuth.')
   }
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
     },
   })
   if (error) throw error
