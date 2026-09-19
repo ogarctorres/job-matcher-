@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertCircle, ArrowRight, Sparkles, GraduationCap, Code2, FolderGit2, ChevronRight } from 'lucide-react'
+import { CheckCircle2, AlertCircle, ArrowRight, FileCheck, GraduationCap, Code2, FolderGit2, ChevronRight } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import ScoreGauge from './ScoreGauge'
 
@@ -10,7 +10,7 @@ function TelaAvaliacao() {
       <div className="tela">
         <div className="estado-vazio">
           <div className="estado-vazio-icone-box">
-            <Sparkles size={24} />
+            <FileCheck size={24} />
           </div>
           <h2>Nenhuma análise disponível</h2>
           <p>Faça o upload do seu currículo para gerar o diagnóstico de compatibilidade.</p>

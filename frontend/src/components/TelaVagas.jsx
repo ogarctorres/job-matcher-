@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, SlidersHorizontal, Briefcase, Sparkles, Compass, Loader2 } from 'lucide-react'
+import { Search, SlidersHorizontal, Briefcase, Target, Compass, Loader2 } from 'lucide-react'
 import CardVaga from './CardVaga'
 import { useApp } from '../contexts/AppContext'
 import { useDebounce } from '../hooks/useDebounce'
@@ -105,7 +105,7 @@ function TelaVagas() {
           gap: '12px',
         }}
       >
-        <Sparkles size={20} color="var(--accent)" style={{ flexShrink: 0 }} />
+        <Target size={20} color="var(--accent)" style={{ flexShrink: 0 }} />
         <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>
           {resultado.dados_curriculo?.resumo || 'Perfil técnico analisado com base nas competências identificadas.'}
         </p>

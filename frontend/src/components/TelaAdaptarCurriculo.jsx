@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
-  Wand2,
+  FileCheck,
   Copy,
   Check,
   Download,
   AlertCircle,
   Loader2,
-  Sparkles,
+  FileText,
   AlertTriangle,
   ShieldCheck,
   Target,
@@ -204,7 +204,7 @@ function TelaAdaptarCurriculo() {
               title="Gera uma versão profissional ATS-friendly baseada no perfil geral sem necessidade de vaga específica"
               style={{ fontSize: '13px' }}
             >
-              <Sparkles size={15} />
+              <FileText size={15} />
               <span>Gerar Versão Geral ATS</span>
             </button>
 
@@ -230,12 +230,12 @@ function TelaAdaptarCurriculo() {
                 {carregando ? (
                   <>
                     <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
-                    <span>Executando Job Matching com IA…</span>
+                    <span>Processando Adequação Técnica…</span>
                   </>
                 ) : (
                   <>
-                    <Wand2 size={16} aria-hidden="true" />
-                    <span>Otimizar para esta Vaga (Job Match)</span>
+                    <FileCheck size={16} aria-hidden="true" />
+                    <span>Adequar para esta Vaga (Job Match)</span>
                   </>
                 )}
               </button>

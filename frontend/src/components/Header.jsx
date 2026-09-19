@@ -3,7 +3,7 @@ import {
   Award,
   Briefcase,
   Code2,
-  Wand2,
+  FileCheck,
   History,
   TrendingUp,
   Settings,
@@ -36,8 +36,8 @@ function Header() {
     },
     {
       id: 'adaptar',
-      label: 'Otimizar p/ Vaga',
-      icone: Wand2,
+      label: 'Adequar p/ Vaga',
+      icone: FileCheck,
       destaque: true,
     },
     { id: 'dashboard', label: 'Tendências', icone: TrendingUp },
@@ -86,14 +86,14 @@ function Header() {
           })}
         </nav>
 
-        {/* Status do Provedor de IA com acessibilidade */}
-        <div className="header-status" role="status" aria-label="Status do Provedor de Inteligência Artificial: Gemini Flash Online">
+        {/* Status da Plataforma */}
+        <div className="header-status" role="status" aria-label="Status da Plataforma: Vektor Carreiras Ativo">
           <span
             style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }}
             aria-hidden="true"
           />
           <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-            Gemini Flash
+            Vektor Carreiras
           </span>
         </div>
       </div>

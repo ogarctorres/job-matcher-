@@ -7,7 +7,7 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
-  Wand2,
+  FileCheck,
   Code2,
 } from 'lucide-react'
 import { api } from '../services/api'
@@ -120,12 +120,12 @@ function CardVaga({ vaga, dadosCurriculo }) {
                 title={
                   ehSnippetCurto
                     ? 'Esta vaga contém um resumo curto. Ao abrir, recomendamos colar a descrição completa para máxima precisão.'
-                    : 'Reescrever meu currículo direcionado aos requisitos desta vaga'
+                    : 'Alinhar meu currículo aos requisitos desta oportunidade'
                 }
-                aria-label={`Otimizar currículo para a vaga de ${vaga.titulo}`}
+                aria-label={`Adequar currículo para a vaga de ${vaga.titulo}`}
               >
-                <Wand2 size={14} color="var(--accent)" aria-hidden="true" />
-                <span>Otimizar Currículo</span>
+                <FileCheck size={14} color="var(--accent)" aria-hidden="true" />
+                <span>Adequar Currículo</span>
                 {ehSnippetCurto && (
                   <span
                     style={{

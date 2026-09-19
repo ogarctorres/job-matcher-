@@ -1,8 +1,8 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import {
   Award,
   Briefcase,
-  Wand2,
+  FileCheck,
   Code2,
   Menu,
   X,
@@ -10,7 +10,7 @@ import {
   TrendingUp,
   Settings,
   FileText,
-  Sparkles,
+  Compass,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 
@@ -42,8 +42,8 @@ function BottomNav() {
     },
     {
       id: 'adaptar',
-      label: 'Otimizar',
-      icone: Wand2,
+      label: 'Adequar',
+      icone: FileCheck,
     },
   ]
 
@@ -117,7 +117,7 @@ function BottomNav() {
           <div className="bottom-nav-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="bottom-nav-drawer-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={18} color="var(--accent)" />
+                <Compass size={18} color="var(--accent)" />
                 <h3 style={{ fontSize: '15px', color: 'var(--text-primary)', margin: 0 }}>Vektor Menu</h3>
               </div>
               <button

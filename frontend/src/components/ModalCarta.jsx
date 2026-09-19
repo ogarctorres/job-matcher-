@@ -1,77 +1,67 @@
-import { useState, useEffect } from 'react'
-import { X, Copy, Check, Sparkles, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { X, Copy, Check, FileText, Loader2 } from 'lucide-react'
 import { api } from '../services/api'
 import { useCopiaClipboard } from '../hooks/useCopiaClipboard'
 
-function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
-  const [carta, setCarta] = useState('')
-  const [assunto, setAssunto] = useState('')
+function ModalCarta({ aberta, aoFechar, dadosCurriculo, vaga }) {
+  const [carta, setCarta] = useState(null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
-  const { copiado, copiar } = useCopiaClipboard()
+  const [copiado, copiar] = useCopiaClipboard()
 
-  // Suporte a teclado: fechar modal ao pressionar Escape (WCAG / Web Interface Guidelines)
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === 'Escape') {
-        onFechar()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onFechar])
+  if (!aberta) return null
 
   async function gerar() {
     setCarregando(true)
     setErro(null)
+
     try {
-      const res = await api.gerarCarta(dadosCurriculo, vaga)
-      setCarta(res.carta)
-      setAssunto(res.assunto_email)
-    } catch (e) {
-      setErro(e.message)
+      const dados = await api.gerarCarta(dadosCurriculo, vaga)
+      setCarta(dados.carta)
+    } catch (falha) {
+      setErro(falha.message)
     } finally {
       setCarregando(false)
     }
   }
 
+  const assunto = vaga?.titulo ? `Candidatura: ${vaga.titulo} — ${dadosCurriculo?.nome || 'Estudante'}` : 'Candidatura de Estágio'
+
   function handleCopiarTudo() {
+    if (!carta) return
     const textoCompleto = `Assunto: ${assunto}\n\n${carta}`
     copiar(textoCompleto)
   }
 
   return (
-    <div className="modal-overlay" onClick={onFechar} role="presentation">
-      <div
-        className="modal-conteudo"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-carta-titulo"
-      >
-        {/* Topo do Modal */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-carta-titulo" onClick={aoFechar}>
+      <div className="modal-conteudo" onClick={(e) => e.stopPropagation()}>
+        {/* Cabeçalho do Modal */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div>
-            <span className="rotulo" style={{ marginBottom: '6px' }}>Gerador de Apresentação</span>
-            <h2 id="modal-carta-titulo" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Carta Customizada para a Vaga
+            <span className="rotulo">Apresentação Profissional</span>
+            <h2 id="modal-carta-titulo" style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
+              Carta de Apresentação
             </h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {vaga.titulo} • <strong style={{ color: 'var(--text-secondary)' }}>{vaga.empresa}</strong>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+              {vaga.titulo} — {vaga.empresa}
             </p>
           </div>
           <button
             type="button"
-            onClick={onFechar}
-            aria-label="Fechar janela de carta de apresentação"
+            className="botao-fechar-drawer"
+            onClick={aoFechar}
+            aria-label="Fechar modal de carta de apresentação"
             style={{
-              background: 'none',
+              background: 'transparent',
               border: 'none',
               color: 'var(--text-muted)',
               cursor: 'pointer',
               padding: '6px',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 'var(--radius-md)',
               display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <X size={20} aria-hidden="true" />
@@ -82,17 +72,17 @@ function ModalCarta({ vaga, dadosCurriculo, onFechar }) {
         {!carta && !carregando && (
           <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: 'var(--bg-surface-subtle)', borderRadius: 'var(--radius-lg)' }}>
             <div className="estado-vazio-icone-box" style={{ margin: '0 auto 16px' }}>
-              <Sparkles size={24} color="var(--accent)" />
+              <FileText size={24} color="var(--accent)" />
             </div>
             <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
               Gerar Texto Personalizado
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '13.5px', maxWidth: '44ch', margin: '0 auto 24px', lineHeight: '1.5' }}>
-              A inteligência analisa o perfil do seu currículo e a descrição desta vaga específica para redigir uma carta elegante e persuasiva.
+              Elabora uma proposta formal conectando sua formação acadêmica e histórico técnico aos requisitos desta vaga.
             </p>
             <button type="button" className="botao-primario" onClick={gerar}>
-              <Sparkles size={16} aria-hidden="true" />
-              <span>Gerar Carta com IA</span>
+              <FileText size={16} aria-hidden="true" />
+              <span>Gerar Carta de Apresentação</span>
             </button>
           </div>
         )}

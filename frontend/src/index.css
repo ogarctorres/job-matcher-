@@ -1,65 +1,65 @@
 :root {
-  /* Superfícies & Fundos */
-  --bg-app: #080c14;
-  --bg-sidebar: #0b101b;
-  --bg-card: #0f172a;
-  --bg-card-hover: #131c33;
-  --bg-surface: #1e293b;
-  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
+  /* Superfícies & Fundos — Design Linear/Ashby Carbon Neutro */
+  --bg-app: #09090b;
+  --bg-sidebar: #0e0e11;
+  --bg-card: #121215;
+  --bg-card-hover: #18181c;
+  --bg-surface: #18181b;
+  --bg-surface-subtle: rgba(255, 255, 255, 0.025);
 
-  /* Linhas & Divisórias */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-card: rgba(255, 255, 255, 0.1);
-  --border-focus: #3b82f6;
+  /* Linhas & Divisórias Sutis */
+  --border-subtle: #27272a;
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-focus: #52525b;
 
   /* Tipografia & Cores de Texto */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-disabled: #475569;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-disabled: #52525b;
 
-  /* Cores de Acento & Status */
+  /* Cores de Acento & Status Refinados */
   --accent: #3b82f6;
   --accent-hover: #2563eb;
-  --accent-subtle: rgba(59, 130, 246, 0.12);
-  --accent-border: rgba(59, 130, 246, 0.25);
+  --accent-subtle: rgba(59, 130, 246, 0.1);
+  --accent-border: rgba(59, 130, 246, 0.2);
 
   --success: #10b981;
-  --success-subtle: rgba(16, 185, 129, 0.12);
-  --success-border: rgba(16, 185, 129, 0.25);
+  --success-subtle: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.2);
 
   --warning: #f59e0b;
-  --warning-subtle: rgba(245, 158, 11, 0.12);
+  --warning-subtle: rgba(245, 158, 11, 0.1);
 
   --danger: #ef4444;
-  --danger-subtle: rgba(239, 68, 68, 0.12);
-  --danger-border: rgba(239, 68, 68, 0.25);
+  --danger-subtle: rgba(239, 68, 68, 0.1);
+  --danger-border: rgba(239, 68, 68, 0.2);
 
-  /* Tipografia */
-  --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+  /* Tipografia Profissional */
+  --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Sombras & Profundidade */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 20px -3px rgba(59, 130, 246, 0.25);
-  --shadow-modal: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+  /* Sombras & Profundidade Compacta */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 15px -2px rgba(59, 130, 246, 0.15);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.65);
 
-  /* Raios de borda */
+  /* Raios de borda refinados */
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
   --radius-full: 9999px;
 
-  /* Transições explícitas */
-  --transition: color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transições consistentes */
+  --transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {

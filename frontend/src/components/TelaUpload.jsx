@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react'
 import {
-  UploadCloud,
   FileText,
+  FileUp,
   X,
   ArrowRight,
   Loader2,
   CheckCircle2,
-  Sparkles,
+  ShieldCheck,
+  Layers,
+  Search,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 
 const ETAPAS_PROCESSAMENTO = [
   { id: 1, titulo: 'Validando formato e integridade do documento PDF', progresso: 25 },
-  { id: 2, titulo: 'Extraindo competências técnicas e formação com IA', progresso: 55 },
-  { id: 3, titulo: 'Avaliando conformidade com critérios ATS e senioridade', progresso: 80 },
-  { id: 4, titulo: 'Minerando vagas compatíveis e calculando scores', progresso: 95 },
+  { id: 2, titulo: 'Processando histórico acadêmico e competências técnicas', progresso: 55 },
+  { id: 3, titulo: 'Avaliando conformidade com critérios ATS e requisitos de estágio', progresso: 80 },
+  { id: 4, titulo: 'Buscando vagas no mercado e calculando índices de compatibilidade', progresso: 95 },
 ]
 
 function TelaUpload() {
@@ -25,6 +27,7 @@ function TelaUpload() {
   const [carregandoDemo, setCarregandoDemo] = useState(false)
   const [etapaIndice, setEtapaIndice] = useState(0)
   const [progressoPorcentagem, setProgressoPorcentagem] = useState(25)
+  const [abaConsole, setAbaConsole] = useState('upload')
 
   useEffect(() => {
     let timer
@@ -157,279 +160,362 @@ function TelaUpload() {
   }
 
   return (
-    <div className="tela">
-      <header className="tela-cabecalho">
-        <span className="rotulo">Análise de Carreira</span>
-        <h1>Diagnóstico de Perfil Técnico</h1>
-        <p className="tela-descricao">
-          Envie seu currículo em PDF para mapear suas competências, receber sugestões de aprimoramento e encontrar vagas ativas no mercado com alta compatibilidade.
+    <div className="tela tela-upload-split">
+      {/* Coluna Esquerda: Proposta de Valor Executiva & Pipeline de 3 Etapas */}
+      <div className="upload-coluna-info">
+        <div className="upload-badge-categoria">
+          <ShieldCheck size={13} color="var(--accent)" />
+          <span>DIAGNÓSTICO ATS & MERCADO REAL</span>
+        </div>
+
+        <h1 className="upload-titulo-hero">
+          Avalie a maturidade técnica do seu currículo contra o mercado real.
+        </h1>
+
+        <p className="upload-descricao-hero">
+          O Vektor valida a estrutura, legibilidade e densidade de competências do seu perfil acadêmico em relação aos critérios de contratação e sistemas ATS corporativos.
         </p>
-      </header>
 
-      <div className="zona-upload-container">
-        {/* Dropzone Interativo */}
-        {!arquivo ? (
-          <div>
-            <div
-              className={`dropzone ${arrastando ? 'arrastando' : ''}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <input
-                id="upload-curriculo-pdf"
-                type="file"
-                accept=".pdf"
-                onChange={handleMudancaArquivo}
-                disabled={carregando || carregandoDemo}
-                aria-label="Selecione ou arraste seu currículo em formato PDF"
-              />
-              <div className="dropzone-icone-box">
-                <UploadCloud size={24} strokeWidth={2} aria-hidden="true" />
-              </div>
-              <p className="dropzone-titulo">
-                {arrastando ? 'Solte o arquivo PDF aqui' : 'Arraste seu currículo ou clique para procurar'}
-              </p>
-              <p className="dropzone-subtitulo">
-                Suporta apenas documentos em formato PDF (tamanho máximo de 8&nbsp;MB).
+        {/* Pipeline Explicativo de 3 Passos */}
+        <div className="upload-workflow-steps">
+          <div className="workflow-step-item">
+            <div className="workflow-step-num">01</div>
+            <div>
+              <h4 className="workflow-step-titulo">Auditoria Estrutural ATS</h4>
+              <p className="workflow-step-desc">
+                Análise de conformidade de cabeçalho, legibilidade por robôs de triagem e densidade de palavras-chave técnicas.
               </p>
             </div>
+          </div>
 
-            {/* Separador e Card de Demonstração (Onboarding instantâneo) */}
-            <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0 18px', gap: '16px' }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
-              <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', fontWeight: 600 }}>
-                ou experimente instantaneamente
-              </span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+          <div className="workflow-step-item">
+            <div className="workflow-step-num">02</div>
+            <div>
+              <h4 className="workflow-step-titulo">Mapeamento Factual de Gaps</h4>
+              <p className="workflow-step-desc">
+                Diagnóstico de requisitos obrigatórios vs. diferenciais desejáveis para vagas de entrada e estágio.
+              </p>
             </div>
+          </div>
 
-            <div
-              style={{
-                backgroundColor: 'var(--bg-card)',
-                border: '1px solid var(--border-card)',
-                borderRadius: 'var(--radius-xl)',
-                padding: '18px 22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '16px',
-                transition: 'var(--transition)',
-              }}
+          <div className="workflow-step-item">
+            <div className="workflow-step-num">03</div>
+            <div>
+              <h4 className="workflow-step-titulo">Matching & Preparação Técnica</h4>
+              <p className="workflow-step-desc">
+                Cálculo auditável de compatibilidade com vagas reais no Brasil e simulador de testes práticos no LeetCode.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Métricas e Garantias de Rigor */}
+        <div className="upload-trust-metrics">
+          <div className="trust-metric-box">
+            <div className="trust-metric-icon">
+              <CheckCircle2 size={16} color="var(--success)" />
+            </div>
+            <div>
+              <span className="trust-metric-label">100% Factual</span>
+              <p className="trust-metric-sub">Sem invenção de dados</p>
+            </div>
+          </div>
+
+          <div className="trust-metric-box">
+            <div className="trust-metric-icon">
+              <Layers size={16} color="var(--accent)" />
+            </div>
+            <div>
+              <span className="trust-metric-label">Padrão ATS</span>
+              <p className="trust-metric-sub">Triagem corporativa</p>
+            </div>
+          </div>
+
+          <div className="trust-metric-box">
+            <div className="trust-metric-icon">
+              <Search size={16} color="#a1a1aa" />
+            </div>
+            <div>
+              <span className="trust-metric-label">Tempo Real</span>
+              <p className="trust-metric-sub">Vagas ativas no Brasil</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Coluna Direita: Console de Upload Compacto & Perfil de Exemplo */}
+      <div className="upload-coluna-acao">
+        <div className="upload-card-console">
+          {/* Abas no topo da caixa: Enviar PDF | Usar Perfil Demo */}
+          <div className="console-tabs-header">
+            <button
+              type="button"
+              className={`console-tab-btn ${abaConsole === 'upload' ? 'ativo' : ''}`}
+              onClick={() => setAbaConsole('upload')}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: 'var(--accent-subtle)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--accent)',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Sparkles size={20} />
-                </div>
+              <FileUp size={14} />
+              <span>Enviar Currículo (PDF)</span>
+            </button>
+            <button
+              type="button"
+              className={`console-tab-btn ${abaConsole === 'exemplo' ? 'ativo' : ''}`}
+              onClick={() => setAbaConsole('exemplo')}
+            >
+              <FileText size={14} />
+              <span>Perfil de Exemplo</span>
+            </button>
+          </div>
+
+          {abaConsole === 'upload' ? (
+            <div>
+              {!arquivo ? (
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <strong style={{ fontSize: '13.5px', color: 'var(--text-primary)' }}>
-                      Perfil de Demonstração Interativo
-                    </strong>
-                    <span className="sidebar-badge" style={{ fontSize: '10px' }}>Exemplo Pré-carregado</span>
+                  <div
+                    className={`dropzone ${arrastando ? 'arrastando' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      id="upload-curriculo-pdf"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleMudancaArquivo}
+                      disabled={carregando || carregandoDemo}
+                      aria-label="Selecione ou arraste seu currículo em formato PDF"
+                    />
+                    <div className="dropzone-icone-box">
+                      <FileUp size={22} strokeWidth={2} aria-hidden="true" />
+                    </div>
+                    <p className="dropzone-titulo">
+                      {arrastando ? 'Solte o arquivo PDF aqui' : 'Arraste seu currículo ou clique para escolher'}
+                    </p>
+                    <p className="dropzone-subtitulo">
+                      Formatos aceitos: exclusivamente PDF (limite de até 8&nbsp;MB).
+                    </p>
+                    <div style={{ marginTop: '14px' }}>
+                      <span className="botao-secundario" style={{ pointerEvents: 'none', fontSize: '12.5px', padding: '6px 14px' }}>
+                        Escolher Arquivo do Computador
+                      </span>
+                    </div>
                   </div>
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                    Lucas Mendes • Ciência da Computação (Mackenzie) • Backend Python & FastAPI
+
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', lineHeight: '1.4' }}>
+                    Seus dados são analisados de forma estritamente privada para cálculo de compatibilidade.
                   </p>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  {/* Prévia do Arquivo Selecionado */}
+                  <div className="card-arquivo-selecionado">
+                    <div className="card-arquivo-info">
+                      <div style={{ color: 'var(--accent)', display: 'flex' }}>
+                        <FileText size={22} aria-hidden="true" />
+                      </div>
+                      <div>
+                        <p className="card-arquivo-nome">{arquivo.name}</p>
+                        <p className="card-arquivo-tamanho tabular-nums">{formatarTamanho(arquivo.size)}</p>
+                      </div>
+                    </div>
+                    {!carregando && (
+                      <button
+                        type="button"
+                        onClick={() => setArquivo(null)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          padding: '4px',
+                        }}
+                        title="Remover arquivo selecionado"
+                        aria-label="Remover arquivo selecionado"
+                      >
+                        <X size={18} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
 
+                  {/* Ações */}
+                  <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      className="botao-primario"
+                      onClick={enviarCurriculo}
+                      disabled={carregando}
+                      style={{ flex: 1, padding: '10px 18px' }}
+                    >
+                      {carregando ? (
+                        <>
+                          <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
+                          <span>Analisando Documento…</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Iniciar Diagnóstico</span>
+                          <ArrowRight size={15} aria-hidden="true" />
+                        </>
+                      )}
+                    </button>
+                    {!carregando && (
+                      <button type="button" className="botao-secundario" onClick={() => setArquivo(null)}>
+                        Trocar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Aba de Perfil de Exemplo (Onboarding Instantâneo) */
+            <div className="console-demo-box">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span className="header-badge" style={{ fontSize: '10px' }}>PERFIL ACADÊMICO</span>
+                <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Lucas Mendes</strong>
+              </div>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 12px' }}>
+                Ciência da Computação (Mackenzie • 2026). Perfil com foco em desenvolvimento Backend Python, FastAPI, Docker e PostgreSQL.
+              </p>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '18px' }}>
+                {['Python', 'FastAPI', 'PostgreSQL', 'Docker', 'pytest', 'SQL'].map((sk) => (
+                  <span
+                    key={sk}
+                    style={{
+                      fontSize: '11px',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--text-secondary)',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    {sk}
+                  </span>
+                ))}
+              </div>
               <button
                 type="button"
-                className="botao-secundario"
+                className="botao-primario"
                 onClick={carregarPerfilDemo}
-                disabled={carregando || carregandoDemo}
-                style={{ fontSize: '12.5px', padding: '8px 14px', borderColor: 'var(--accent-border)' }}
+                disabled={carregandoDemo}
+                style={{ width: '100%' }}
               >
                 {carregandoDemo ? (
                   <>
-                    <Loader2 size={14} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Carregando Demo…</span>
+                    <Loader2 size={15} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Carregando Dados de Demonstração…</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles size={14} color="var(--accent)" />
-                    <span>Experimentar sem PDF</span>
+                    <span>Testar com este Perfil de Exemplo</span>
+                    <ArrowRight size={15} />
                   </>
                 )}
               </button>
             </div>
-          </div>
-        ) : (
-          <div>
-            {/* Card com prévia do arquivo selecionado */}
-            <div className="card-arquivo-selecionado">
-              <div className="card-arquivo-info">
-                <div style={{ color: 'var(--accent)', display: 'flex' }}>
-                  <FileText size={22} aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="card-arquivo-nome">{arquivo.name}</p>
-                  <p className="card-arquivo-tamanho tabular-nums">{formatarTamanho(arquivo.size)}</p>
-                </div>
-              </div>
-              {!carregando && (
-                <button
-                  type="button"
-                  onClick={() => setArquivo(null)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    padding: '4px',
-                  }}
-                  title="Remover arquivo selecionado"
-                  aria-label="Remover arquivo selecionado"
-                >
-                  <X size={18} aria-hidden="true" />
-                </button>
-              )}
-            </div>
+          )}
 
-            {/* Ação principal */}
-            <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-              <button
-                type="button"
-                className="botao-buscar"
-                onClick={enviarCurriculo}
-                disabled={carregando}
-                style={{ flex: 1 }}
-              >
-                {carregando ? (
-                  <>
-                    <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
-                    <span>Processando com IA…</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Iniciar Análise</span>
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </>
-                )}
-              </button>
-              {!carregando && (
-                <button type="button" className="botao-secundario" onClick={() => setArquivo(null)}>
-                  Trocar PDF
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Stepper Dinâmico Realista durante o processamento */}
-        {carregando && (
-          <div
-            className="stepper-processamento"
-            role="status"
-            aria-live="polite"
-            style={{
-              marginTop: '24px',
-              padding: '20px 24px',
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-card)',
-              borderRadius: 'var(--radius-xl)',
-            }}
-          >
-            <div className="stepper-cabecalho" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Loader2 size={16} className="animar-spin" style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13.5px' }}>
-                  {ETAPAS_PROCESSAMENTO[etapaIndice]?.titulo}
+          {/* Stepper de Processamento Realista */}
+          {carregando && (
+            <div
+              className="stepper-processamento"
+              role="status"
+              aria-live="polite"
+              style={{
+                marginTop: '18px',
+                padding: '16px',
+                borderRadius: 'var(--radius-lg)',
+                backgroundColor: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Loader2 size={15} className="animar-spin" style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>
+                    {ETAPAS_PROCESSAMENTO[etapaIndice]?.titulo}
+                  </span>
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: '12.5px' }}>
+                  {progressoPorcentagem}%
                 </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: '13.5px' }}>
-                {progressoPorcentagem}%
-              </span>
-            </div>
 
-            <div
-              className="barra-progresso-trilho"
-              role="progressbar"
-              aria-label="Progresso da análise do currículo"
-              aria-valuenow={progressoPorcentagem}
-              aria-valuemin="0"
-              aria-valuemax="100"
-              style={{ height: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-app)', overflow: 'hidden' }}
-            >
               <div
-                className="barra-progresso-preenchimento"
-                style={{
-                  width: `${progressoPorcentagem}%`,
-                  height: '100%',
-                  backgroundColor: 'var(--accent)',
-                  transition: 'width 0.4s ease-in-out',
-                }}
-              />
-            </div>
+                className="barra-progresso-trilho"
+                role="progressbar"
+                aria-label="Progresso da análise do currículo"
+                aria-valuenow={progressoPorcentagem}
+                aria-valuemin="0"
+                aria-valuemax="100"
+                style={{ height: '6px', borderRadius: '3px', backgroundColor: 'var(--bg-app)', overflow: 'hidden' }}
+              >
+                <div
+                  className="barra-progresso-preenchimento"
+                  style={{
+                    width: `${progressoPorcentagem}%`,
+                    height: '100%',
+                    backgroundColor: 'var(--accent)',
+                    transition: 'width 0.4s ease-in-out',
+                  }}
+                />
+              </div>
 
-            {/* Lista com as 4 etapas de validação e mineração */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
-              {ETAPAS_PROCESSAMENTO.map((etapa, idx) => {
-                const concluida = idx < etapaIndice
-                const ativa = idx === etapaIndice
-                return (
-                  <div key={etapa.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12.5px' }}>
-                    {concluida ? (
-                      <CheckCircle2 size={16} color="var(--success)" style={{ flexShrink: 0 }} />
-                    ) : ativa ? (
-                      <div
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                {ETAPAS_PROCESSAMENTO.map((etapa, idx) => {
+                  const concluida = idx < etapaIndice
+                  const ativa = idx === etapaIndice
+                  return (
+                    <div key={etapa.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+                      {concluida ? (
+                        <CheckCircle2 size={14} color="var(--success)" style={{ flexShrink: 0 }} />
+                      ) : ativa ? (
+                        <div
+                          style={{
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            border: '2px solid var(--accent)',
+                            borderTopColor: 'transparent',
+                            animation: 'spin 1s linear infinite',
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '14px',
+                            height: '14px',
+                            borderRadius: '50%',
+                            border: '1px solid var(--border-subtle)',
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                      <span
                         style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '50%',
-                          border: '2px solid var(--accent)',
-                          borderTopColor: 'transparent',
-                          animation: 'spin 1s linear infinite',
-                          flexShrink: 0,
+                          color: concluida ? 'var(--text-secondary)' : ativa ? 'var(--text-primary)' : 'var(--text-muted)',
+                          fontWeight: ativa ? 600 : 400,
                         }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '50%',
-                          border: '1px solid var(--border-subtle)',
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <span
-                      style={{
-                        color: concluida ? 'var(--text-secondary)' : ativa ? 'var(--text-primary)' : 'var(--text-muted)',
-                        fontWeight: ativa ? 600 : 400,
-                      }}
-                    >
-                      {etapa.titulo}
-                    </span>
-                  </div>
-                )
-              })}
+                      >
+                        {etapa.titulo}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Mensagem de Erro com role=alert */}
-        {erro && (
-          <div style={{ marginTop: '16px' }} className="mensagem-erro" role="alert" aria-live="assertive">
-            {erro}
-          </div>
-        )}
+          {/* Mensagem de Erro */}
+          {erro && (
+            <div style={{ marginTop: '14px' }} className="mensagem-erro" role="alert" aria-live="assertive">
+              {erro}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

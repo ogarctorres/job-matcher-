@@ -66,7 +66,7 @@ function Sidebar() {
       <div className="sidebar-rodape">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-          <span>v2.0 • Jooble & Gemini</span>
+          <span>v2.0 • Vektor Core</span>
         </div>
       </div>
     </aside>
