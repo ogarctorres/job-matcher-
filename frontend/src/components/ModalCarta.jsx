@@ -7,7 +7,7 @@ function ModalCarta({ aberta, aoFechar, dadosCurriculo, vaga }) {
   const [carta, setCarta] = useState(null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
-  const [copiado, copiar] = useCopiaClipboard()
+  const { copiado, copiar } = useCopiaClipboard()
 
   if (!aberta) return null
 

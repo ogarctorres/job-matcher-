@@ -20,5 +20,9 @@ export function useCopiaClipboard() {
     }
   }
 
-  return { copiado, copiar }
+  const ret = [copiado, copiar]
+  ret.copiado = copiado
+  ret.copiar = copiar
+  return ret
 }
+

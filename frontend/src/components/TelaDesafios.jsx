@@ -201,7 +201,7 @@ function TelaDesafios() {
   const [carregando, setCarregando] = useState(false)
   const [executandoTestes, setExecutandoTestes] = useState(false)
   const [resultadoTestes, setResultadoTestes] = useState(null)
-  const [copiado, copiar] = useCopiaClipboard()
+  const { copiado, copiar } = useCopiaClipboard()
 
   useEffect(() => {
     let ativo = true

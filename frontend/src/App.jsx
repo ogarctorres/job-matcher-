@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { Component, lazy, Suspense } from 'react'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
 import TelaUpload from './components/TelaUpload'
@@ -13,6 +13,47 @@ const TelaDesafios = lazy(() => import('./components/TelaDesafios'))
 const TelaDashboard = lazy(() => import('./components/TelaDashboard'))
 const TelaHistorico = lazy(() => import('./components/TelaHistorico'))
 const TelaConfiguracoes = lazy(() => import('./components/TelaConfiguracoes'))
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Erro na renderização da tela:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="tela" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ maxWidth: '480px', margin: '0 auto', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-xl)', padding: '32px' }}>
+            <h3 style={{ fontSize: '18px', color: 'var(--text-primary)', marginBottom: '8px' }}>Ocorreu um erro ao carregar esta tela</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+              {this.state.error?.message || 'Erro inesperado na aplicação.'}
+            </p>
+            <button
+              type="button"
+              className="botao-primario"
+              onClick={() => {
+                this.setState({ hasError: false, error: null })
+                window.location.reload()
+              }}
+            >
+              Recarregar Aplicação
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 function TelaCarregandoFallback() {
   return (
@@ -55,16 +96,18 @@ function ConteudoPrincipal() {
       </a>
       <Header />
       <main id="conteudo-principal" className="conteudo-principal" tabIndex={-1}>
-        <Suspense fallback={<TelaCarregandoFallback />}>
-          {telaAtiva === 'upload' && <TelaUpload />}
-          {telaAtiva === 'avaliacao' && <TelaAvaliacao />}
-          {telaAtiva === 'vagas' && <TelaVagas />}
-          {telaAtiva === 'desafios' && <TelaDesafios />}
-          {telaAtiva === 'adaptar' && <TelaAdaptarCurriculo />}
-          {telaAtiva === 'dashboard' && <TelaDashboard />}
-          {telaAtiva === 'historico' && <TelaHistorico />}
-          {telaAtiva === 'configuracoes' && <TelaConfiguracoes />}
-        </Suspense>
+        <ErrorBoundary key={telaAtiva}>
+          <Suspense fallback={<TelaCarregandoFallback />}>
+            {telaAtiva === 'upload' && <TelaUpload />}
+            {telaAtiva === 'avaliacao' && <TelaAvaliacao />}
+            {telaAtiva === 'vagas' && <TelaVagas />}
+            {telaAtiva === 'desafios' && <TelaDesafios />}
+            {telaAtiva === 'adaptar' && <TelaAdaptarCurriculo />}
+            {telaAtiva === 'dashboard' && <TelaDashboard />}
+            {telaAtiva === 'historico' && <TelaHistorico />}
+            {telaAtiva === 'configuracoes' && <TelaConfiguracoes />}
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <BottomNav />
     </div>
