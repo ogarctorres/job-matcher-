@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 /**
  * Cliente HTTP centralizado para consumo da API do Job Matcher.
  */
@@ -10,6 +12,19 @@ async function request(endpoint, options = {}) {
   const caminhoLimpo = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
   const url = `${API_BASE_URL}${caminhoLimpo}`
   const headers = options.headers || {}
+
+  // Injeta automaticamente o token JWT da sessão ativa do Supabase (Autenticação Bearer)
+  try {
+    if (supabase) {
+      const { data } = await supabase.auth.getSession()
+      const token = data?.session?.access_token
+      if (token && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    }
+  } catch {
+    // Ignora restrições temporárias de sessão
+  }
 
   // Sincroniza preferências salvas em TelaConfiguracoes (BUG-07)
   try {

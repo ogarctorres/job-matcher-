@@ -9,26 +9,33 @@ from sqlalchemy import func
 
 from app.database import get_db
 from app.models.analise import Analise
+from app.core.seguranca import obter_usuario_opcional
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/estatisticas", tags=["Estatísticas"])
 
 
 @router.get("/")
-def obter_estatisticas(db: Session = Depends(get_db)):
+def obter_estatisticas(
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_opcional),
+):
     """
-    Retorna estatísticas agregadas de todas as análises:
+    Retorna estatísticas agregadas das análises do usuário (ou gerais da plataforma se anônimo):
     - Total de análises
     - Score médio
     - Skills mais frequentes
     - Cargos mais buscados
     """
+    query_base = db.query(Analise)
+    if usuario and usuario.get("id"):
+        query_base = query_base.filter(Analise.user_id == usuario["id"])
 
-    total = db.query(func.count(Analise.id)).scalar() or 0
-    media_nota = db.query(func.avg(Analise.nota_geral)).scalar() or 0
+    total = query_base.with_entities(func.count(Analise.id)).scalar() or 0
+    media_nota = query_base.with_entities(func.avg(Analise.nota_geral)).scalar() or 0
 
     # Agregar skills e cargos
-    analises = db.query(Analise.dados_curriculo_json).all()
+    analises = query_base.with_entities(Analise.dados_curriculo_json).all()
 
     todas_skills = Counter()
     todos_cargos = Counter()

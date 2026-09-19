@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.analise import CurriculoAdaptado, Analise
 from app.services.otimizador import adaptar_curriculo, gerar_curriculo_generico
+from app.core.seguranca import obter_usuario_atual
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Adaptação de Currículo"])
@@ -29,10 +30,17 @@ class CurriculoGenericoRequest(BaseModel):
     dados_curriculo: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Dados estruturados do currículo")
 
 
-def _salvar_adaptacao_no_banco(db: Session, resultado: dict, analise_id: Optional[int], titulo_fallback: str) -> Optional[CurriculoAdaptado]:
-    """Helper seguro para salvar a versão adaptada no banco sem derrubar a resposta em caso de falha."""
+def _salvar_adaptacao_no_banco(
+    db: Session,
+    resultado: dict,
+    analise_id: Optional[int],
+    titulo_fallback: str,
+    user_id: Optional[str] = None
+) -> Optional[CurriculoAdaptado]:
+    """Helper seguro para salvar a versão adaptada no banco vinculada ao usuário."""
     try:
         adaptacao = CurriculoAdaptado(
+            user_id=user_id,
             analise_id=analise_id,
             titulo_vaga=resultado.get("titulo_vaga_alvo") or titulo_fallback,
             modo=resultado.get("modo") or "otimizado_para_vaga",
@@ -50,7 +58,11 @@ def _salvar_adaptacao_no_banco(db: Session, resultado: dict, analise_id: Optiona
 
 
 @router.post("/adaptar-curriculo")
-async def adaptar_curriculo_endpoint(payload: AdaptarCurriculoRequest, db: Session = Depends(get_db)):
+async def adaptar_curriculo_endpoint(
+    payload: AdaptarCurriculoRequest,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
+):
     """
     Reescreve o currículo do candidato e persiste a versão gerada no histórico SQLite.
     - Se houver descrição de vaga: executa MODO 2 (Job Matching Estratégico com detecção de gaps e requisitos).
@@ -70,12 +82,13 @@ async def adaptar_curriculo_endpoint(payload: AdaptarCurriculoRequest, db: Sessi
             titulo_vaga=payload.titulo_vaga or "Vaga de Tecnologia",
         )
 
-        # Persistência no SQLite
+        # Persistência no SQLite vinculada ao usuário
         salvo = _salvar_adaptacao_no_banco(
             db=db,
             resultado=resultado,
             analise_id=payload.analise_id,
             titulo_fallback=payload.titulo_vaga or "Vaga Alvo",
+            user_id=usuario["id"],
         )
         if salvo:
             resultado["id"] = salvo.id
@@ -92,7 +105,11 @@ async def adaptar_curriculo_endpoint(payload: AdaptarCurriculoRequest, db: Sessi
 
 
 @router.post("/gerar-curriculo-generico")
-async def gerar_curriculo_generico_endpoint(payload: CurriculoGenericoRequest, db: Session = Depends(get_db)):
+async def gerar_curriculo_generico_endpoint(
+    payload: CurriculoGenericoRequest,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
+):
     """
     MODO 1: Gera um currículo profissional, ATS-friendly sem foco em uma vaga específica e persiste no SQLite.
     """
@@ -110,6 +127,7 @@ async def gerar_curriculo_generico_endpoint(payload: CurriculoGenericoRequest, d
             resultado=resultado,
             analise_id=payload.analise_id,
             titulo_fallback="Perfil Geral de Tecnologia",
+            user_id=usuario["id"],
         )
         if salvo:
             resultado["id"] = salvo.id
@@ -126,11 +144,18 @@ async def gerar_curriculo_generico_endpoint(payload: CurriculoGenericoRequest, d
 
 
 @router.get("/adaptar-curriculo/historico/{analise_id}")
-def listar_historico_adaptacoes(analise_id: int, db: Session = Depends(get_db)):
-    """Retorna todas as adaptações realizadas vinculadas a uma análise de currículo."""
+def listar_historico_adaptacoes(
+    analise_id: int,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
+):
+    """Retorna todas as adaptações realizadas vinculadas a uma análise do usuário autenticado."""
     itens = (
         db.query(CurriculoAdaptado)
-        .filter(CurriculoAdaptado.analise_id == analise_id)
+        .filter(
+            CurriculoAdaptado.analise_id == analise_id,
+            CurriculoAdaptado.user_id == usuario["id"]
+        )
         .order_by(CurriculoAdaptado.criado_em.desc())
         .all()
     )
@@ -138,20 +163,42 @@ def listar_historico_adaptacoes(analise_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/adaptar-curriculo/{adaptacao_id}")
-def obter_adaptacao(adaptacao_id: int, db: Session = Depends(get_db)):
-    """Retorna uma versão específica de currículo adaptado."""
-    adaptacao = db.query(CurriculoAdaptado).filter(CurriculoAdaptado.id == adaptacao_id).first()
+def obter_adaptacao(
+    adaptacao_id: int,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
+):
+    """Retorna uma versão específica de currículo adaptado pertencente ao usuário autenticado."""
+    adaptacao = (
+        db.query(CurriculoAdaptado)
+        .filter(
+            CurriculoAdaptado.id == adaptacao_id,
+            CurriculoAdaptado.user_id == usuario["id"]
+        )
+        .first()
+    )
     if not adaptacao:
-        raise HTTPException(status_code=404, detail="Currículo adaptado não encontrado.")
+        raise HTTPException(status_code=404, detail="Currículo adaptado não encontrado ou não autorizado.")
     return adaptacao.to_dict()
 
 
 @router.delete("/adaptar-curriculo/{adaptacao_id}")
-def deletar_adaptacao(adaptacao_id: int, db: Session = Depends(get_db)):
-    """Deleta uma versão específica de currículo adaptado."""
-    adaptacao = db.query(CurriculoAdaptado).filter(CurriculoAdaptado.id == adaptacao_id).first()
+def deletar_adaptacao(
+    adaptacao_id: int,
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
+):
+    """Deleta uma versão específica de currículo adaptado pertencente ao usuário autenticado."""
+    adaptacao = (
+        db.query(CurriculoAdaptado)
+        .filter(
+            CurriculoAdaptado.id == adaptacao_id,
+            CurriculoAdaptado.user_id == usuario["id"]
+        )
+        .first()
+    )
     if not adaptacao:
-        raise HTTPException(status_code=404, detail="Currículo adaptado não encontrado.")
+        raise HTTPException(status_code=404, detail="Currículo adaptado não encontrado ou não autorizado.")
     db.delete(adaptacao)
     db.commit()
     return {"mensagem": f"Currículo adaptado #{adaptacao_id} removido com sucesso."}

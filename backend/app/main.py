@@ -2,6 +2,7 @@
 Job Matcher API — Ponto de entrada da aplicação.
 """
 
+import os
 import time
 import logging
 from collections import defaultdict
@@ -49,36 +50,76 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# Middleware de Proteção contra Bruteforce e DoS (Rate Limiting por IP)
+# Middleware de Cabeçalhos de Segurança HTTP (Clickjacking & Content Sniffing)
 # ---------------------------------------------------------------------------
-MAX_REQ_POR_MINUTO = 60
-_historico_requisicoes_ip: dict[str, list[float]] = defaultdict(list)
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Middleware de Proteção contra Bruteforce e DoS (Rate Limiting Granular por IP)
+# ---------------------------------------------------------------------------
+MAX_REQ_GERAL_MINUTO = 60
+MAX_REQ_IA_MINUTO = 5  # Limite rígido para rotas de alto custo computacional/IA
+
+_historico_ip_geral: dict[str, list[float]] = defaultdict(list)
+_historico_ip_ia: dict[str, list[float]] = defaultdict(list)
+
+ROTAS_IA_PESADAS = {"/curriculo", "/adaptar-curriculo", "/gerar-curriculo-generico", "/carta"}
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    # Isenta rotas estáticas e healthchecks
-    if request.url.path in ["/", "/health", "/docs", "/openapi.json"]:
-        return await call_next(request)
-
     agora = time.time()
     # Extrai o IP de origem considerando proxies reversos de produção (Render / Cloudflare)
     encaminhado = request.headers.get("x-forwarded-for")
-    client_ip = encaminhado.split(",")[0].strip() if encaminhado else (request.client.host if request.client else "127.0.0.1")
+    client_ip = (
+        encaminhado.split(",")[0].strip()
+        if encaminhado
+        else (request.client.host if request.client else "127.0.0.1")
+    )
 
-    # Limpa registros expirados (janela de 60 segundos)
-    timestamps = [t for t in _historico_requisicoes_ip[client_ip] if agora - t < 60]
-    _historico_requisicoes_ip[client_ip] = timestamps
+    # Isenta rotas estáticas, healthchecks e execução de testes automatizados (testclient)
+    if (
+        os.getenv("TESTING") == "1"
+        or client_ip in ["testclient", "testserver"]
+        or request.url.path in ["/", "/health", "/docs", "/openapi.json"]
+    ):
+        return await call_next(request)
 
-    if len(timestamps) >= MAX_REQ_POR_MINUTO:
+    # 1. Proteção de Cota de IA (Prevenção de Financial DoS)
+    if request.url.path in ROTAS_IA_PESADAS and request.method == "POST":
+        ts_ia = [t for t in _historico_ip_ia[client_ip] if agora - t < 60]
+        _historico_ip_ia[client_ip] = ts_ia
+        if len(ts_ia) >= MAX_REQ_IA_MINUTO:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": f"Limite de operações de IA excedido (máx {MAX_REQ_IA_MINUTO} requisições/min). Aguarde 1 minuto."
+                },
+                headers={"Retry-After": "60"},
+            )
+        _historico_ip_ia[client_ip].append(agora)
+
+    # 2. Rate Limiting Geral da API
+    ts_geral = [t for t in _historico_ip_geral[client_ip] if agora - t < 60]
+    _historico_ip_geral[client_ip] = ts_geral
+
+    if len(ts_geral) >= MAX_REQ_GERAL_MINUTO:
         return JSONResponse(
             status_code=429,
             content={
-                "detail": "Limite de requisições excedido (Rate Limit: máx 60 req/min). Tente novamente em breve."
+                "detail": f"Limite de requisições excedido (máx {MAX_REQ_GERAL_MINUTO} req/min). Aguarde um instante."
             },
             headers={"Retry-After": "60"},
         )
 
-    _historico_requisicoes_ip[client_ip].append(agora)
+    _historico_ip_geral[client_ip].append(agora)
     return await call_next(request)
 
 

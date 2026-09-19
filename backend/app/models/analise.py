@@ -12,6 +12,7 @@ class CurriculoAdaptado(Base):
     __tablename__ = "curriculos_adaptados"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(100), nullable=True, index=True)
     analise_id = Column(Integer, ForeignKey("analises.id", ondelete="CASCADE"), nullable=True, index=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -32,6 +33,7 @@ class CurriculoAdaptado(Base):
         """Converte o currículo adaptado para dicionário de retorno na API."""
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "analise_id": self.analise_id,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "titulo_vaga": self.titulo_vaga,
@@ -45,6 +47,7 @@ class Analise(Base):
     __tablename__ = "analises"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(100), nullable=True, index=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Dados do currículo
@@ -95,6 +98,7 @@ class Analise(Base):
         """Converte para dicionário para retorno na API."""
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "dados_curriculo": self.dados_curriculo,
             "avaliacao": self.avaliacao,
@@ -109,6 +113,7 @@ class Analise(Base):
         dados = self.dados_curriculo
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "nota_geral": self.nota_geral,
             "cargo_objetivo": dados.get("cargo_objetivo", ""),

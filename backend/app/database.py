@@ -34,7 +34,22 @@ def get_db():
 
 
 def criar_tabelas():
-    """Cria todas as tabelas no banco se não existirem."""
+    """Cria todas as tabelas no banco se não existirem e aplica migrações defensivas seguras."""
     import app.models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Migração defensiva leve para SQLite (garante coluna user_id sem requerer Alembic)
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(engine)
+        for tabela in ["analises", "curriculos_adaptados"]:
+            if tabela in inspector.get_table_names():
+                colunas = [c["name"] for c in inspector.get_columns(tabela)]
+                if "user_id" not in colunas:
+                    with engine.begin() as conn:
+                        conn.execute(text(f"ALTER TABLE {tabela} ADD COLUMN user_id VARCHAR(100)"))
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Aviso na verificação de migração: {e}")
+
 

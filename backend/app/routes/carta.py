@@ -2,9 +2,10 @@
 
 import logging
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from app.services.carta import gerar_carta
+from app.core.seguranca import obter_usuario_atual
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Carta"])
@@ -16,7 +17,10 @@ class CartaRequest(BaseModel):
 
 
 @router.post("/carta")
-async def gerar_carta_endpoint(dados: CartaRequest):
+async def gerar_carta_endpoint(
+    dados: CartaRequest,
+    usuario: dict = Depends(obter_usuario_atual),
+):
     """Gera uma carta de apresentação personalizada para uma vaga."""
     try:
         resultado = gerar_carta(dados.dados_curriculo, dados.vaga)

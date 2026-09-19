@@ -10,6 +10,7 @@ from app.core.config import TAMANHO_MAXIMO_MB
 from app.database import get_db
 from app.models.analise import Analise
 from app.services import curriculo, ia, avaliador, buscador, matcher
+from app.core.seguranca import obter_usuario_atual, obter_usuario_opcional
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -25,7 +26,8 @@ async def enviar_curriculo(
     arquivo: UploadFile,
     localizacao: Optional[str] = Form(None),
     x_localizacao: Optional[str] = Header(None, alias="X-Localizacao"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(obter_usuario_atual),
 ):
     """Recebe um PDF de currículo, analisa com IA e busca vagas compatíveis."""
 
@@ -122,6 +124,7 @@ async def enviar_curriculo(
     # Salvar no banco
     try:
         analise = Analise(
+            user_id=usuario["id"],
             texto_curriculo=texto,
             nota_geral=avaliacao.get("nota_geral", 0),
         )
@@ -147,7 +150,10 @@ async def enviar_curriculo(
 
 
 @router.get("/curriculo/demo")
-def obter_curriculo_demo(db: Session = Depends(get_db)):
+def obter_curriculo_demo(
+    db: Session = Depends(get_db),
+    usuario: Optional[dict] = Depends(obter_usuario_opcional),
+):
     """Retorna um perfil de demonstração completo (Lucas Mendes - Ciência da Computação) e persiste no histórico."""
     texto_cv = """
     LUCAS MENDES
@@ -235,6 +241,7 @@ def obter_curriculo_demo(db: Session = Depends(get_db)):
 
     try:
         analise = Analise(
+            user_id=usuario["id"] if usuario else "demo_publico",
             texto_curriculo=texto_cv.strip(),
             nota_geral=88.0,
         )
