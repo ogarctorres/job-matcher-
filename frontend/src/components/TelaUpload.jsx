@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Loader2,
   CheckCircle2,
-  ShieldCheck,
   Layers,
   Search,
   Check,
@@ -14,6 +13,9 @@ import {
   Building2,
   Lock,
   RefreshCw,
+  Sparkles,
+  Award,
+  AlertTriangle,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
@@ -228,6 +230,10 @@ function TelaUpload() {
 
   return (
     <div className="tela-upload-container">
+      {/* Atmosfera e Profundidade de Fundo (Backdrop Glow & Engineering Grid) */}
+      <div className="upload-atmosphere-glow" aria-hidden="true" />
+      <div className="upload-tech-grid" aria-hidden="true" />
+
       {/* Input de Arquivo Oculto (acessível via ref) */}
       <input
         ref={fileInputRef}
@@ -242,21 +248,24 @@ function TelaUpload() {
       <div className="tela tela-upload-split">
         {/* Coluna Esquerda: Proposta de Valor Executiva & Pipeline de 3 Etapas */}
         <div className="upload-coluna-info">
-          <div className="upload-badge-categoria">
-            <ShieldCheck size={13} color="var(--accent)" />
-            <span>DIAGNÓSTICO ATS & MERCADO REAL</span>
+          <div className="upload-badge-categoria anim-fade-up-1">
+            <span className="badge-ping-wrapper">
+              <span className="badge-ping-dot" />
+              <span className="badge-ping-ring" />
+            </span>
+            <span>Motor de Triagem ATS v2.4 Ativo</span>
           </div>
 
-          <h1 className="upload-titulo-hero">
+          <h1 className="upload-titulo-hero anim-fade-up-2">
             Avalie a maturidade técnica do seu currículo contra o mercado real.
           </h1>
 
-          <p className="upload-descricao-hero">
+          <p className="upload-descricao-hero anim-fade-up-2">
             O Vektor valida a estrutura, legibilidade e densidade de competências do seu perfil acadêmico em relação aos critérios de contratação e sistemas ATS corporativos.
           </p>
 
           {/* Pipeline Explicativo de 3 Passos */}
-          <div className="upload-workflow-steps">
+          <div className="upload-workflow-steps anim-fade-up-3">
             <div className="workflow-step-item">
               <div className="workflow-step-num">01</div>
               <div>
@@ -289,7 +298,7 @@ function TelaUpload() {
           </div>
 
           {/* Métricas e Garantias de Rigor */}
-          <div className="upload-trust-metrics">
+          <div className="upload-trust-metrics anim-fade-up-4">
             <div className="trust-metric-box">
               <div className="trust-metric-icon">
                 <CheckCircle2 size={16} color="var(--success)" />
@@ -324,7 +333,7 @@ function TelaUpload() {
 
         {/* Coluna Direita: Console de Upload Compacto & Perfil de Exemplo */}
         <div className="upload-coluna-acao">
-          <div className="upload-card-console">
+          <div className="upload-card-console anim-fade-up-3">
             {/* Abas no topo da caixa: Enviar PDF | Usar Perfil Demo */}
             <div className="console-tabs-header">
               <button
@@ -494,11 +503,103 @@ function TelaUpload() {
               </div>
             )}
           </div>
+
+          {/* Mini-Dashboard / Glassmorphism Preview do Relatório ATS */}
+          <div className="preview-diagnostico-card anim-fade-up-4">
+            <div className="preview-card-header">
+              <div className="preview-card-title-group">
+                <div className="preview-card-icon">
+                  <Sparkles size={14} />
+                </div>
+                <div>
+                  <span className="preview-card-title">Prévia de Diagnóstico em Tempo Real</span>
+                  <span className="preview-card-subtitle">Exemplo de auditoria gerada para vagas tech</span>
+                </div>
+              </div>
+              <div className="preview-score-badge">
+                <Award size={12} />
+                <span>Score 84/100</span>
+              </div>
+            </div>
+
+            <div className="preview-card-body">
+              {/* Gauge Radial + Métricas de Triagem */}
+              <div className="preview-gauge-row">
+                <div className="preview-radial-wrapper">
+                  <svg className="preview-radial-svg" viewBox="0 0 72 72">
+                    <circle
+                      className="preview-radial-track"
+                      cx="36"
+                      cy="36"
+                      r="30"
+                      strokeWidth="6"
+                    />
+                    <circle
+                      className="preview-radial-fill"
+                      cx="36"
+                      cy="36"
+                      r="30"
+                      strokeWidth="6"
+                      strokeDasharray="188.4"
+                      strokeDashoffset="30.14"
+                    />
+                  </svg>
+                  <div className="preview-radial-center">
+                    <span className="preview-radial-val">84%</span>
+                    <span className="preview-radial-lbl">ATS Match</span>
+                  </div>
+                </div>
+
+                <div className="preview-stats-list">
+                  <div className="preview-stat-item">
+                    <span className="preview-stat-dot dot-green" />
+                    <span className="preview-stat-name">Legibilidade ATS</span>
+                    <strong className="preview-stat-val">Alta (96%)</strong>
+                  </div>
+                  <div className="preview-stat-item">
+                    <span className="preview-stat-dot dot-cyan" />
+                    <span className="preview-stat-name">Densidade Semântica</span>
+                    <strong className="preview-stat-val">Forte (88%)</strong>
+                  </div>
+                  <div className="preview-stat-item">
+                    <span className="preview-stat-dot dot-amber" />
+                    <span className="preview-stat-name">Gaps Críticos</span>
+                    <strong className="preview-stat-val text-amber">1 Requisito</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chips de Competências Analisadas */}
+              <div className="preview-chips-container">
+                <span className="preview-chips-label">Competências Auditadas:</span>
+                <div className="preview-chips-grid">
+                  <span className="preview-chip chip-sucesso">
+                    <Check size={11} strokeWidth={3} /> Python 3.11
+                  </span>
+                  <span className="preview-chip chip-sucesso">
+                    <Check size={11} strokeWidth={3} /> FastAPI & REST
+                  </span>
+                  <span className="preview-chip chip-sucesso">
+                    <Check size={11} strokeWidth={3} /> PostgreSQL
+                  </span>
+                  <span className="preview-chip chip-sucesso">
+                    <Check size={11} strokeWidth={3} /> Docker
+                  </span>
+                  <span className="preview-chip chip-alerta">
+                    <AlertTriangle size={11} strokeWidth={2.5} /> AWS / Nuvem (Gap)
+                  </span>
+                  <span className="preview-chip chip-diferencial">
+                    <Sparkles size={11} /> Pytest & CI/CD
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Barra de Prova Social & Enquadramento de Viewport */}
-      <div className="upload-barra-social">
+      <div className="upload-barra-social anim-fade-up-5">
         <div className="social-proof-header">
           <span>Compatível com sistemas ATS e padrões de triagem corporativos de empresas líderes:</span>
         </div>
