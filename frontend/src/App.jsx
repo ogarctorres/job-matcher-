@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense } from 'react'
 import Header from './components/Header'
 import BottomNav from './components/BottomNav'
+import ModalAuth from './components/ModalAuth'
 import TelaUpload from './components/TelaUpload'
 import { AppProvider, useApp } from './contexts/AppContext'
 import './App.css'
@@ -110,6 +111,7 @@ function ConteudoPrincipal() {
         </ErrorBoundary>
       </main>
       <BottomNav />
+      <ModalAuth />
     </div>
   )
 }

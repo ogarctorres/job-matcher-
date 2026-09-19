@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   FileText,
   FileUp,
@@ -9,29 +9,81 @@ import {
   ShieldCheck,
   Layers,
   Search,
+  Check,
+  Terminal,
+  Building2,
+  Lock,
+  RefreshCw,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 
 const ETAPAS_PROCESSAMENTO = [
-  { id: 1, titulo: 'Validando formato e integridade do documento PDF', progresso: 25 },
-  { id: 2, titulo: 'Processando histórico acadêmico e competências técnicas', progresso: 55 },
-  { id: 3, titulo: 'Avaliando conformidade com critérios ATS e requisitos de estágio', progresso: 80 },
-  { id: 4, titulo: 'Buscando vagas no mercado e calculando índices de compatibilidade', progresso: 95 },
+  {
+    id: 1,
+    titulo: 'Extraindo texto e estrutura semântica do documento PDF...',
+    icone: '📄',
+    log: 'Extração estruturada de blocos textuais e cabeçalhos realizada.',
+    progresso: 25,
+  },
+  {
+    id: 2,
+    titulo: 'Simulando triagem e filtros ATS corporativos...',
+    icone: '🤖',
+    log: 'Auditoria de legibilidade por robôs e densidade de palavras-chave.',
+    progresso: 55,
+  },
+  {
+    id: 3,
+    titulo: 'Mapeando gaps em relação a requisitos do mercado...',
+    icone: '🎯',
+    log: 'Classificação factual de competências mandatórias vs. diferenciais.',
+    progresso: 82,
+  },
+  {
+    id: 4,
+    titulo: 'Cruzando compatibilidade com vagas reais ativas no Brasil...',
+    icone: '💼',
+    log: 'Índices de compatibilidade e oportunidades de estágio calculados.',
+    progresso: 98,
+  },
+]
+
+const EMPRESAS_COMPATIVEIS = [
+  'Nubank',
+  'Mercado Livre',
+  'Stone',
+  'Itaú Unibanco',
+  'iFood',
+  'QuintoAndar',
+  'Startups Globais',
 ]
 
 function TelaUpload() {
-  const { setResultado, setTelaAtiva, carregando, setCarregando, erro, setErro } = useApp()
+  const {
+    setResultado,
+    setTelaAtiva,
+    carregando,
+    setCarregando,
+    erro,
+    setErro,
+    usuario,
+    abrirModalAuth,
+  } = useApp()
+
   const [arquivo, setArquivo] = useState(null)
   const [arrastando, setArrastando] = useState(false)
   const [carregandoDemo, setCarregandoDemo] = useState(false)
   const [etapaIndice, setEtapaIndice] = useState(0)
   const [progressoPorcentagem, setProgressoPorcentagem] = useState(25)
   const [abaConsole, setAbaConsole] = useState('upload')
+  const [resultadoPendente, setResultadoPendente] = useState(null)
+  const [modalSoftGate, setModalSoftGate] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     let timer
-    if (carregando) {
+    if (carregando || carregandoDemo) {
       setEtapaIndice(0)
       setProgressoPorcentagem(25)
       timer = setInterval(() => {
@@ -40,18 +92,22 @@ function TelaUpload() {
           setProgressoPorcentagem(ETAPAS_PROCESSAMENTO[prox].progresso)
           return prox
         })
-      }, 1400)
+      }, 950)
     } else {
       setEtapaIndice(0)
       setProgressoPorcentagem(0)
     }
     return () => clearInterval(timer)
-  }, [carregando])
+  }, [carregando, carregandoDemo])
 
   function validarEAtribuirArquivo(file) {
     if (!file) return
     if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
-      setErro('Por favor, envie um documento em formato PDF.')
+      setErro('Por favor, selecione exclusivamente um arquivo em formato PDF.')
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setErro('O arquivo excede o limite máximo permitido de 8 MB.')
       return
     }
     setArquivo(file)
@@ -81,10 +137,21 @@ function TelaUpload() {
   }
 
   function formatarTamanho(bytes) {
-    if (!bytes) return '0\u00A0KB'
+    if (!bytes) return '0 KB'
     const kb = bytes / 1024
-    if (kb < 1024) return `${kb.toFixed(1)}\u00A0KB`
-    return `${(kb / 1024).toFixed(1)}\u00A0MB`
+    if (kb < 1024) return `${kb.toFixed(1)} KB`
+    return `${(kb / 1024).toFixed(1)} MB`
+  }
+
+  function concluirAnalise(dados) {
+    setResultado(dados)
+    // Se o usuário não estiver autenticado, exibe o Soft Gate elegante de produto SaaS
+    if (!usuario) {
+      setResultadoPendente(dados)
+      setModalSoftGate(true)
+    } else {
+      setTelaAtiva('avaliacao')
+    }
   }
 
   async function enviarCurriculo() {
@@ -94,8 +161,7 @@ function TelaUpload() {
 
     try {
       const dados = await api.enviarCurriculo(arquivo)
-      setResultado(dados)
-      setTelaAtiva('avaliacao')
+      concluirAnalise(dados)
     } catch (falha) {
       setErro(falha.message)
     } finally {
@@ -108,216 +174,230 @@ function TelaUpload() {
     setErro(null)
     try {
       const dados = await api.carregarDemo()
-      setResultado(dados)
-      setTelaAtiva('avaliacao')
+      concluirAnalise(dados)
     } catch {
       // Fallback estático garantido caso a API esteja em manutenção
       const demoFallback = {
         id: null,
         dados_curriculo: {
-          nome: "Lucas Mendes",
-          email: "lucas.mendes@email.com",
-          cidade: "São Paulo",
-          estado: "SP",
-          cargo_objetivo: "Estágio em Desenvolvimento Backend",
-          resumo: "Estudante de Ciência da Computação apaixonado por desenvolvimento backend com Python, APIs RESTful e bancos relacionais. Prática com FastAPI, Docker e testes automatizados.",
-          skills: ["Python", "FastAPI", "PostgreSQL", "Docker", "Git", "REST APIs", "pytest", "SQL", "Redis"],
-          formacao: "Ciência da Computação — Mackenzie (Previsão: 12/2026)",
-          previsao_formatura: "12/2026",
-          termo_busca_vaga: "estágio backend python",
+          nome: 'Lucas Mendes',
+          email: 'lucas.mendes@email.com',
+          cidade: 'São Paulo',
+          estado: 'SP',
+          cargo_objetivo: 'Estágio em Desenvolvimento Backend',
+          resumo:
+            'Estudante de Ciência da Computação apaixonado por desenvolvimento backend com Python, APIs RESTful e bancos relacionais. Prática com FastAPI, Docker e testes automatizados.',
+          skills: ['Python', 'FastAPI', 'PostgreSQL', 'Docker', 'Git', 'REST APIs', 'pytest', 'SQL', 'Redis'],
+          formacao: 'Ciência da Computação — Mackenzie (Previsão: 12/2026)',
+          previsao_formatura: '12/2026',
+          termo_busca_vaga: 'estágio backend python',
         },
         avaliacao: {
           nota_geral: 88,
           pontos_fortes: [
-            "Excelente especificação de stack moderna de backend (FastAPI, Docker, PostgreSQL).",
-            "Métricas concretas em projetos pessoais (cobertura de testes > 85%).",
-            "Clareza de objetivo profissional e alinhamento estrito com estágio."
+            'Excelente especificação de stack moderna de backend (FastAPI, Docker, PostgreSQL).',
+            'Métricas concretas em projetos pessoais (cobertura de testes > 85%).',
+            'Clareza de objetivo profissional e alinhamento estrito com estágio.',
           ],
           pontos_melhoria: [
-            "Adicionar menção a mensageria ou background jobs (RabbitMQ ou Celery).",
-            "Destacar vivência com cloud computing básica (AWS ou GCP)."
+            'Adicionar menção a mensageria ou background jobs (RabbitMQ ou Celery).',
+            'Destacar vivência com cloud computing básica (AWS ou GCP).',
           ],
-          comentario_geral: "Perfil altamente competitivo para estágio em engenharia de software e backend."
+          comentario_geral: 'Perfil altamente competitivo para estágio em engenharia de software e backend.',
         },
         vagas_encontradas: [
           {
-            titulo: "Estágio em Engenharia de Software (Python / FastAPI)",
-            empresa: "Fintech Vektor Labs",
-            localizacao: "São Paulo, SP (Híbrido)",
-            descricao: "Buscamos estudante de Ciência da Computação ou Engenharia de Software com interesse em desenvolvimento backend. Requisitos: conhecimento em Python, APIs RESTful, SQL e Git. Diferenciais: Docker e testes automatizados.",
-            link: "https://linkedin.com",
+            titulo: 'Estágio em Engenharia de Software (Python / FastAPI)',
+            empresa: 'Fintech Vektor Labs',
+            localizacao: 'São Paulo, SP (Híbrido)',
+            descricao:
+              'Buscamos estudante de Ciência da Computação ou Engenharia de Software com interesse em desenvolvimento backend. Requisitos: conhecimento em Python, APIs RESTful, SQL e Git. Diferenciais: Docker e testes automatizados.',
+            link: 'https://linkedin.com',
             score: 92,
-            explicacao_score: "Altíssima compatibilidade: domina tecnologias mandatórias (Python, FastAPI, SQL) e possui diferenciais em Docker e pytest."
-          }
+            explicacao_score:
+              'Altíssima compatibilidade: domina tecnologias mandatórias (Python, FastAPI, SQL) e possui diferenciais em Docker e pytest.',
+          },
         ],
         demo: true,
       }
-      setResultado(demoFallback)
-      setTelaAtiva('avaliacao')
+      concluirAnalise(demoFallback)
     } finally {
       setCarregandoDemo(false)
     }
   }
 
   return (
-    <div className="tela tela-upload-split">
-      {/* Coluna Esquerda: Proposta de Valor Executiva & Pipeline de 3 Etapas */}
-      <div className="upload-coluna-info">
-        <div className="upload-badge-categoria">
-          <ShieldCheck size={13} color="var(--accent)" />
-          <span>DIAGNÓSTICO ATS & MERCADO REAL</span>
+    <div className="tela-upload-container">
+      {/* Input de Arquivo Oculto (acessível via ref) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        style={{ display: 'none' }}
+        onChange={handleMudancaArquivo}
+        aria-hidden="true"
+      />
+
+      {/* Grid Principal em 2 Colunas */}
+      <div className="tela tela-upload-split">
+        {/* Coluna Esquerda: Proposta de Valor Executiva & Pipeline de 3 Etapas */}
+        <div className="upload-coluna-info">
+          <div className="upload-badge-categoria">
+            <ShieldCheck size={13} color="var(--accent)" />
+            <span>DIAGNÓSTICO ATS & MERCADO REAL</span>
+          </div>
+
+          <h1 className="upload-titulo-hero">
+            Avalie a maturidade técnica do seu currículo contra o mercado real.
+          </h1>
+
+          <p className="upload-descricao-hero">
+            O Vektor valida a estrutura, legibilidade e densidade de competências do seu perfil acadêmico em relação aos critérios de contratação e sistemas ATS corporativos.
+          </p>
+
+          {/* Pipeline Explicativo de 3 Passos */}
+          <div className="upload-workflow-steps">
+            <div className="workflow-step-item">
+              <div className="workflow-step-num">01</div>
+              <div>
+                <h4 className="workflow-step-titulo">Auditoria Estrutural ATS</h4>
+                <p className="workflow-step-desc">
+                  Conformidade de cabeçalho, legibilidade por robôs de triagem corporativos e densidade semântica de palavras-chave.
+                </p>
+              </div>
+            </div>
+
+            <div className="workflow-step-item">
+              <div className="workflow-step-num">02</div>
+              <div>
+                <h4 className="workflow-step-titulo">Mapeamento Factual de Gaps</h4>
+                <p className="workflow-step-desc">
+                  Classificação rigorosa entre requisitos mandatórios e diferenciais competitivos para estágios em tecnologia.
+                </p>
+              </div>
+            </div>
+
+            <div className="workflow-step-item">
+              <div className="workflow-step-num">03</div>
+              <div>
+                <h4 className="workflow-step-titulo">Matching & Preparação Técnica</h4>
+                <p className="workflow-step-desc">
+                  Cálculo auditável de aderência com vagas ativas no Brasil e simulador de testes práticos no LeetCode.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Métricas e Garantias de Rigor */}
+          <div className="upload-trust-metrics">
+            <div className="trust-metric-box">
+              <div className="trust-metric-icon">
+                <CheckCircle2 size={16} color="var(--success)" />
+              </div>
+              <div>
+                <span className="trust-metric-label">100% Factual</span>
+                <p className="trust-metric-sub">Sem invenção de dados</p>
+              </div>
+            </div>
+
+            <div className="trust-metric-box">
+              <div className="trust-metric-icon">
+                <Layers size={16} color="var(--accent)" />
+              </div>
+              <div>
+                <span className="trust-metric-label">Padrão ATS</span>
+                <p className="trust-metric-sub">Triagem corporativa</p>
+              </div>
+            </div>
+
+            <div className="trust-metric-box">
+              <div className="trust-metric-icon">
+                <Search size={16} color="#a1a1aa" />
+              </div>
+              <div>
+                <span className="trust-metric-label">Tempo Real</span>
+                <p className="trust-metric-sub">Vagas ativas no Brasil</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <h1 className="upload-titulo-hero">
-          Avalie a maturidade técnica do seu currículo contra o mercado real.
-        </h1>
-
-        <p className="upload-descricao-hero">
-          O Vektor valida a estrutura, legibilidade e densidade de competências do seu perfil acadêmico em relação aos critérios de contratação e sistemas ATS corporativos.
-        </p>
-
-        {/* Pipeline Explicativo de 3 Passos */}
-        <div className="upload-workflow-steps">
-          <div className="workflow-step-item">
-            <div className="workflow-step-num">01</div>
-            <div>
-              <h4 className="workflow-step-titulo">Auditoria Estrutural ATS</h4>
-              <p className="workflow-step-desc">
-                Análise de conformidade de cabeçalho, legibilidade por robôs de triagem e densidade de palavras-chave técnicas.
-              </p>
+        {/* Coluna Direita: Console de Upload Compacto & Perfil de Exemplo */}
+        <div className="upload-coluna-acao">
+          <div className="upload-card-console">
+            {/* Abas no topo da caixa: Enviar PDF | Usar Perfil Demo */}
+            <div className="console-tabs-header">
+              <button
+                type="button"
+                className={`console-tab-btn ${abaConsole === 'upload' ? 'ativo' : ''}`}
+                onClick={() => setAbaConsole('upload')}
+              >
+                <FileUp size={14} />
+                <span>Enviar Currículo (PDF)</span>
+              </button>
+              <button
+                type="button"
+                className={`console-tab-btn ${abaConsole === 'exemplo' ? 'ativo' : ''}`}
+                onClick={() => setAbaConsole('exemplo')}
+              >
+                <FileText size={14} />
+                <span>Perfil de Exemplo</span>
+              </button>
             </div>
-          </div>
 
-          <div className="workflow-step-item">
-            <div className="workflow-step-num">02</div>
-            <div>
-              <h4 className="workflow-step-titulo">Mapeamento Factual de Gaps</h4>
-              <p className="workflow-step-desc">
-                Diagnóstico de requisitos obrigatórios vs. diferenciais desejáveis para vagas de entrada e estágio.
-              </p>
-            </div>
-          </div>
-
-          <div className="workflow-step-item">
-            <div className="workflow-step-num">03</div>
-            <div>
-              <h4 className="workflow-step-titulo">Matching & Preparação Técnica</h4>
-              <p className="workflow-step-desc">
-                Cálculo auditável de compatibilidade com vagas reais no Brasil e simulador de testes práticos no LeetCode.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Métricas e Garantias de Rigor */}
-        <div className="upload-trust-metrics">
-          <div className="trust-metric-box">
-            <div className="trust-metric-icon">
-              <CheckCircle2 size={16} color="var(--success)" />
-            </div>
-            <div>
-              <span className="trust-metric-label">100% Factual</span>
-              <p className="trust-metric-sub">Sem invenção de dados</p>
-            </div>
-          </div>
-
-          <div className="trust-metric-box">
-            <div className="trust-metric-icon">
-              <Layers size={16} color="var(--accent)" />
-            </div>
-            <div>
-              <span className="trust-metric-label">Padrão ATS</span>
-              <p className="trust-metric-sub">Triagem corporativa</p>
-            </div>
-          </div>
-
-          <div className="trust-metric-box">
-            <div className="trust-metric-icon">
-              <Search size={16} color="#a1a1aa" />
-            </div>
-            <div>
-              <span className="trust-metric-label">Tempo Real</span>
-              <p className="trust-metric-sub">Vagas ativas no Brasil</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Coluna Direita: Console de Upload Compacto & Perfil de Exemplo */}
-      <div className="upload-coluna-acao">
-        <div className="upload-card-console">
-          {/* Abas no topo da caixa: Enviar PDF | Usar Perfil Demo */}
-          <div className="console-tabs-header">
-            <button
-              type="button"
-              className={`console-tab-btn ${abaConsole === 'upload' ? 'ativo' : ''}`}
-              onClick={() => setAbaConsole('upload')}
-            >
-              <FileUp size={14} />
-              <span>Enviar Currículo (PDF)</span>
-            </button>
-            <button
-              type="button"
-              className={`console-tab-btn ${abaConsole === 'exemplo' ? 'ativo' : ''}`}
-              onClick={() => setAbaConsole('exemplo')}
-            >
-              <FileText size={14} />
-              <span>Perfil de Exemplo</span>
-            </button>
-          </div>
-
-          {abaConsole === 'upload' ? (
-            <div>
-              {!arquivo ? (
-                <div>
-                  <div
-                    className={`dropzone ${arrastando ? 'arrastando' : ''}`}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                  >
-                    <input
-                      id="upload-curriculo-pdf"
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleMudancaArquivo}
-                      disabled={carregando || carregandoDemo}
-                      aria-label="Selecione ou arraste seu currículo em formato PDF"
-                    />
-                    <div className="dropzone-icone-box">
-                      <FileUp size={22} strokeWidth={2} aria-hidden="true" />
+            {abaConsole === 'upload' ? (
+              <div>
+                {!arquivo ? (
+                  <div>
+                    <div
+                      className={`dropzone ${arrastando ? 'arrastando' : ''}`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Área de envio de currículo em formato PDF"
+                    >
+                      <div className="dropzone-icone-box">
+                        <FileUp size={22} strokeWidth={2} aria-hidden="true" />
+                      </div>
+                      <p className="dropzone-titulo">
+                        {arrastando ? 'Solte o arquivo PDF aqui' : 'Arraste seu currículo ou clique para escolher'}
+                      </p>
+                      <p className="dropzone-subtitulo">
+                        Formato aceito: exclusivamente PDF (limite de até 8&nbsp;MB).
+                      </p>
+                      <div style={{ marginTop: '16px' }}>
+                        <span className="botao-secundario" style={{ fontSize: '12.5px', padding: '7px 16px', pointerEvents: 'none' }}>
+                          Escolher Arquivo do Computador
+                        </span>
+                      </div>
                     </div>
-                    <p className="dropzone-titulo">
-                      {arrastando ? 'Solte o arquivo PDF aqui' : 'Arraste seu currículo ou clique para escolher'}
+
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '14px', lineHeight: '1.4' }}>
+                      Seus dados são analisados de forma estritamente privada para cálculo de conformidade técnica.
                     </p>
-                    <p className="dropzone-subtitulo">
-                      Formatos aceitos: exclusivamente PDF (limite de até 8&nbsp;MB).
-                    </p>
-                    <div style={{ marginTop: '14px' }}>
-                      <span className="botao-secundario" style={{ pointerEvents: 'none', fontSize: '12.5px', padding: '6px 14px' }}>
-                        Escolher Arquivo do Computador
-                      </span>
-                    </div>
                   </div>
+                ) : (
+                  <div>
+                    {/* Card de Prévia com Microinterações e Ações Diretas */}
+                    <div className="card-arquivo-selecionado">
+                      <div className="card-arquivo-info">
+                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', flexShrink: 0, border: '1px solid var(--border-subtle)' }}>
+                          <FileText size={22} aria-hidden="true" />
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                          <p className="card-arquivo-nome" title={arquivo.name}>{arquivo.name}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+                            <span className="card-arquivo-tamanho tabular-nums">{formatarTamanho(arquivo.size)}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--success)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Check size={11} strokeWidth={3} /> PDF Pronto
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', lineHeight: '1.4' }}>
-                    Seus dados são analisados de forma estritamente privada para cálculo de compatibilidade.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  {/* Prévia do Arquivo Selecionado */}
-                  <div className="card-arquivo-selecionado">
-                    <div className="card-arquivo-info">
-                      <div style={{ color: 'var(--accent)', display: 'flex' }}>
-                        <FileText size={22} aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="card-arquivo-nome">{arquivo.name}</p>
-                        <p className="card-arquivo-tamanho tabular-nums">{formatarTamanho(arquivo.size)}</p>
-                      </div>
-                    </div>
-                    {!carregando && (
                       <button
                         type="button"
                         onClick={() => setArquivo(null)}
@@ -327,196 +407,308 @@ function TelaUpload() {
                           color: 'var(--text-muted)',
                           cursor: 'pointer',
                           display: 'flex',
-                          padding: '4px',
+                          padding: '6px',
+                          borderRadius: '4px',
                         }}
                         title="Remover arquivo selecionado"
                         aria-label="Remover arquivo selecionado"
                       >
-                        <X size={18} aria-hidden="true" />
+                        <X size={16} aria-hidden="true" />
                       </button>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Ações */}
-                  <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
-                    <button
-                      type="button"
-                      className="botao-primario"
-                      onClick={enviarCurriculo}
-                      disabled={carregando}
-                      style={{ flex: 1, padding: '10px 18px' }}
-                    >
-                      {carregando ? (
-                        <>
-                          <Loader2 size={16} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
-                          <span>Analisando Documento…</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Iniciar Diagnóstico</span>
-                          <ArrowRight size={15} aria-hidden="true" />
-                        </>
-                      )}
-                    </button>
-                    {!carregando && (
-                      <button type="button" className="botao-secundario" onClick={() => setArquivo(null)}>
-                        Trocar
+                    {/* Botões de Ação Imediata */}
+                    <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        className="botao-secundario"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ fontSize: '12.5px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <RefreshCw size={13} />
+                        <span>Substituir</span>
                       </button>
-                    )}
+
+                      <button
+                        type="button"
+                        className="botao-primario"
+                        onClick={enviarCurriculo}
+                        disabled={carregando}
+                        style={{ flex: 1, padding: '10px 18px', fontSize: '13.5px', fontWeight: 600, justifyContent: 'center' }}
+                      >
+                        <span>Iniciar Diagnóstico ATS</span>
+                        <ArrowRight size={15} aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
+                )}
+              </div>
+            ) : (
+              /* Aba de Perfil de Exemplo (Onboarding Instantâneo) */
+              <div className="console-demo-box">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span className="header-badge" style={{ fontSize: '10px' }}>PERFIL DEMO • BACKEND</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Mackenzie • 2026</span>
                 </div>
-              )}
+                <strong style={{ fontSize: '14.5px', color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
+                  Lucas Mendes
+                </strong>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 12px' }}>
+                  Estágio em Engenharia de Software Backend com foco em Python, FastAPI, Docker, PostgreSQL e testes automatizados.
+                </p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '18px' }}>
+                  {['Python', 'FastAPI', 'PostgreSQL', 'Docker', 'pytest', 'SQL'].map((sk) => (
+                    <span
+                      key={sk}
+                      style={{
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--bg-surface)',
+                        border: '1px solid var(--border-subtle)',
+                        color: 'var(--text-secondary)',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {sk}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="botao-primario"
+                  onClick={carregarPerfilDemo}
+                  disabled={carregandoDemo}
+                  style={{ width: '100%', justifyContent: 'center', padding: '10px 16px' }}
+                >
+                  <span>Testar com este Perfil de Exemplo</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Mensagem de Erro */}
+            {erro && (
+              <div style={{ marginTop: '14px' }} className="mensagem-erro" role="alert" aria-live="assertive">
+                {erro}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Barra de Prova Social & Enquadramento de Viewport */}
+      <div className="upload-barra-social">
+        <div className="social-proof-header">
+          <span>Compatível com sistemas ATS e padrões de triagem corporativos de empresas líderes:</span>
+        </div>
+        <div className="social-proof-badges">
+          {EMPRESAS_COMPATIVEIS.map((empresa) => (
+            <div key={empresa} className="social-proof-pill">
+              <Building2 size={12} color="var(--text-muted)" />
+              <span>{empresa}</span>
             </div>
-          ) : (
-            /* Aba de Perfil de Exemplo (Onboarding Instantâneo) */
-            <div className="console-demo-box">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <span className="header-badge" style={{ fontSize: '10px' }}>PERFIL ACADÊMICO</span>
-                <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>Lucas Mendes</strong>
+          ))}
+        </div>
+
+        <div className="upload-rodape-links">
+          <span>© 2026 Vektor Carreiras • Diagnóstico Factual para Universitários</span>
+          <div className="upload-rodape-menu">
+            <button type="button" onClick={() => abrirModalAuth('login')} className="link-discreto">
+              Privacidade
+            </button>
+            <span className="divisor-ponto">•</span>
+            <button type="button" onClick={() => abrirModalAuth('login')} className="link-discreto">
+              Termos de Uso
+            </button>
+            <span className="divisor-ponto">•</span>
+            <span className="status-sistema-badge">
+              <span className="status-bolinha" />
+              Status: 99.9% Operacional
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* OVERLAY DE ANÁLISE / FEEDBACK DE ALTO PADRÃO (Estilo Linear / Vercel Logs) */}
+      {(carregando || carregandoDemo) && (
+        <div
+          className="modal-overlay-analise"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Processamento e auditoria do currículo em andamento"
+        >
+          <div className="modal-analise-card">
+            {/* Header do Card de Processamento */}
+            <div className="analise-card-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="analise-scanner-pulse">
+                  <span className="scanner-dot" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '15.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                    Auditoria ATS & Processamento em Tempo Real
+                  </h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                    Analisando sintaxe, competências e densidade métrica
+                  </p>
+                </div>
               </div>
-              <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 12px' }}>
-                Ciência da Computação (Mackenzie • 2026). Perfil com foco em desenvolvimento Backend Python, FastAPI, Docker e PostgreSQL.
-              </p>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '18px' }}>
-                {['Python', 'FastAPI', 'PostgreSQL', 'Docker', 'pytest', 'SQL'].map((sk) => (
-                  <span
-                    key={sk}
-                    style={{
-                      fontSize: '11px',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: 'var(--bg-surface)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-secondary)',
-                      fontFamily: 'var(--font-mono)',
-                    }}
+              <span className="analise-porcentagem tabular-nums">{progressoPorcentagem}%</span>
+            </div>
+
+            {/* Barra de Progresso Gradiente */}
+            <div className="analise-progresso-trilho">
+              <div
+                className="analise-progresso-barra"
+                style={{ width: `${progressoPorcentagem}%` }}
+              />
+            </div>
+
+            {/* Etapas Fatuais Sequenciais */}
+            <div className="analise-etapas-lista">
+              {ETAPAS_PROCESSAMENTO.map((etapa, idx) => {
+                const concluida = idx < etapaIndice
+                const ativa = idx === etapaIndice
+                return (
+                  <div
+                    key={etapa.id}
+                    className={`analise-etapa-item ${concluida ? 'concluida' : ativa ? 'ativa' : 'pendente'}`}
                   >
-                    {sk}
-                  </span>
-                ))}
+                    <div className="analise-etapa-indicador">
+                      {concluida ? (
+                        <CheckCircle2 size={15} color="var(--success)" />
+                      ) : ativa ? (
+                        <Loader2 size={15} className="animar-spin" style={{ color: 'var(--accent)' }} />
+                      ) : (
+                        <span className="etapa-dot" />
+                      )}
+                    </div>
+                    <div className="analise-etapa-texto">
+                      <span className="etapa-titulo">{etapa.titulo}</span>
+                      {concluida && <span className="etapa-sublog">{etapa.log}</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Stream de Terminal / Logs de Processamento */}
+            <div className="analise-terminal-logs">
+              <div className="terminal-log-header">
+                <Terminal size={12} color="var(--text-muted)" />
+                <span>engine_log_stream • v2.0</span>
               </div>
+              <div className="terminal-log-linhas">
+                <div className="log-linha">$ vektor audit --format=pdf --engine=ats-enterprise</div>
+                {etapaIndice >= 0 && <div className="log-linha log-check">✓ Extração de blocos de texto (pdfplumber 0.11)</div>}
+                {etapaIndice >= 1 && <div className="log-linha log-check">✓ Parsing de formação, cursos e stack técnica</div>}
+                {etapaIndice >= 2 && <div className="log-linha log-check">✓ Avaliação de legibilidade e palavras-chave ATS</div>}
+                {etapaIndice >= 3 && <div className="log-linha log-check">✓ Mapeamento contra vagas no mercado brasileiro</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SOFT GATE ELEGANTE DE PRODUTO SAAS (Exibido se o usuário não for logado ao finalizar a análise) */}
+      {modalSoftGate && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => {
+            setModalSoftGate(false)
+            setTelaAtiva('avaliacao')
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(9, 9, 11, 0.8)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 1150,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            animation: 'fadeIn 0.2s ease-out',
+          }}
+        >
+          <div
+            className="modal-softgate-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-focus)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '28px 30px',
+              boxShadow: 'var(--shadow-modal)',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--success-subtle)',
+                border: '1px solid var(--success-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                color: 'var(--success)',
+              }}
+            >
+              <CheckCircle2 size={24} />
+            </div>
+
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+              Seu Diagnóstico ATS está Pronto!
+            </h3>
+
+            {resultadoPendente?.avaliacao?.nota_geral && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--accent-subtle)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-mono)', margin: '4px auto 14px' }}>
+                Score Preliminar: {resultadoPendente.avaliacao.nota_geral}/100
+              </div>
+            )}
+
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 20px' }}>
+              Avaliamos a estrutura, legibilidade e compatibilidade do seu currículo. Crie uma conta gratuita para salvar seu histórico e desbloquear o acompanhamento contínuo.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 type="button"
                 className="botao-primario"
-                onClick={carregarPerfilDemo}
-                disabled={carregandoDemo}
-                style={{ width: '100%' }}
+                onClick={() => {
+                  setModalSoftGate(false)
+                  abrirModalAuth('cadastro')
+                  setTelaAtiva('avaliacao')
+                }}
+                style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', fontSize: '13.5px' }}
               >
-                {carregandoDemo ? (
-                  <>
-                    <Loader2 size={15} className="animar-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                    <span>Carregando Dados de Demonstração…</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Testar com este Perfil de Exemplo</span>
-                    <ArrowRight size={15} />
-                  </>
-                )}
+                <Lock size={14} />
+                <span>Salvar Histórico & Desbloquear Acesso Completo</span>
+              </button>
+
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={() => {
+                  setModalSoftGate(false)
+                  setTelaAtiva('avaliacao')
+                }}
+                style={{ width: '100%', justifyContent: 'center', padding: '9px 16px', fontSize: '12.5px' }}
+              >
+                <span>Acessar Diagnóstico como Convidado</span>
               </button>
             </div>
-          )}
-
-          {/* Stepper de Processamento Realista */}
-          {carregando && (
-            <div
-              className="stepper-processamento"
-              role="status"
-              aria-live="polite"
-              style={{
-                marginTop: '18px',
-                padding: '16px',
-                borderRadius: 'var(--radius-lg)',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Loader2 size={15} className="animar-spin" style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>
-                    {ETAPAS_PROCESSAMENTO[etapaIndice]?.titulo}
-                  </span>
-                </div>
-                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: '12.5px' }}>
-                  {progressoPorcentagem}%
-                </span>
-              </div>
-
-              <div
-                className="barra-progresso-trilho"
-                role="progressbar"
-                aria-label="Progresso da análise do currículo"
-                aria-valuenow={progressoPorcentagem}
-                aria-valuemin="0"
-                aria-valuemax="100"
-                style={{ height: '6px', borderRadius: '3px', backgroundColor: 'var(--bg-app)', overflow: 'hidden' }}
-              >
-                <div
-                  className="barra-progresso-preenchimento"
-                  style={{
-                    width: `${progressoPorcentagem}%`,
-                    height: '100%',
-                    backgroundColor: 'var(--accent)',
-                    transition: 'width 0.4s ease-in-out',
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                {ETAPAS_PROCESSAMENTO.map((etapa, idx) => {
-                  const concluida = idx < etapaIndice
-                  const ativa = idx === etapaIndice
-                  return (
-                    <div key={etapa.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
-                      {concluida ? (
-                        <CheckCircle2 size={14} color="var(--success)" style={{ flexShrink: 0 }} />
-                      ) : ativa ? (
-                        <div
-                          style={{
-                            width: '14px',
-                            height: '14px',
-                            borderRadius: '50%',
-                            border: '2px solid var(--accent)',
-                            borderTopColor: 'transparent',
-                            animation: 'spin 1s linear infinite',
-                            flexShrink: 0,
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: '14px',
-                            height: '14px',
-                            borderRadius: '50%',
-                            border: '1px solid var(--border-subtle)',
-                            flexShrink: 0,
-                          }}
-                        />
-                      )}
-                      <span
-                        style={{
-                          color: concluida ? 'var(--text-secondary)' : ativa ? 'var(--text-primary)' : 'var(--text-muted)',
-                          fontWeight: ativa ? 600 : 400,
-                        }}
-                      >
-                        {etapa.titulo}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Mensagem de Erro */}
-          {erro && (
-            <div style={{ marginTop: '14px' }} className="mensagem-erro" role="alert" aria-live="assertive">
-              {erro}
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

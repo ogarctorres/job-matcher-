@@ -25,10 +25,39 @@ export function AppProvider({ children }) {
   const [resultado, setResultado] = useLocalStorage('vektor_resultado', null)
   const [vagaParaAdaptar, setVagaParaAdaptar] = useLocalStorage('vektor_vaga_adaptar', null)
   const [vagaParaDesafio, setVagaParaDesafio] = useLocalStorage('vektor_vaga_desafio', null)
+  const [usuario, setUsuario] = useLocalStorage('vektor_usuario', null)
+  const [modalAuthAberta, setModalAuthAberta] = useState(false)
+  const [modoAuth, setModoAuth] = useState('login')
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const [historico, setHistorico] = useState([])
   const [analiseSelecionada, setAnaliseSelecionada] = useState(null)
+
+  function abrirModalAuth(modo = 'login') {
+    setModoAuth(modo)
+    setModalAuthAberta(true)
+  }
+
+  function fecharModalAuth() {
+    setModalAuthAberta(false)
+  }
+
+  function fazerLogin(dados = {}) {
+    const usuarioLogado = {
+      nome: dados.nome || 'Lucas Mendes',
+      email: dados.email || 'lucas.mendes@email.com',
+      avatar: (dados.nome || 'LM').slice(0, 2).toUpperCase(),
+      plano: dados.plano || 'Gratuito',
+      membroDesde: '2026',
+    }
+    setUsuario(usuarioLogado)
+    setModalAuthAberta(false)
+    return usuarioLogado
+  }
+
+  function fazerLogout() {
+    setUsuario(null)
+  }
 
   function abrirAdaptacaoParaVaga(vaga) {
     setVagaParaAdaptar(vaga)
@@ -52,6 +81,16 @@ export function AppProvider({ children }) {
     setTelaAtiva,
     resultado,
     setResultado,
+    usuario,
+    setUsuario,
+    modalAuthAberta,
+    setModalAuthAberta,
+    modoAuth,
+    setModoAuth,
+    abrirModalAuth,
+    fecharModalAuth,
+    fazerLogin,
+    fazerLogout,
     carregando,
     setCarregando,
     erro,

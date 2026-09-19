@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import {
   FileText,
   Award,
@@ -7,13 +8,36 @@ import {
   History,
   TrendingUp,
   Settings,
+  ChevronDown,
+  LogOut,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import LogoVektor from './LogoVektor'
 
 function Header() {
-  const { telaAtiva, setTelaAtiva, resultado, limparAnaliseAtiva } = useApp()
+  const {
+    telaAtiva,
+    setTelaAtiva,
+    resultado,
+    limparAnaliseAtiva,
+    usuario,
+    abrirModalAuth,
+    fazerLogout,
+  } = useApp()
+
+  const [dropdownAberto, setDropdownAberto] = useState(false)
+  const dropdownRef = useRef(null)
   const totalVagas = resultado ? resultado.vagas_encontradas?.length || 0 : 0
+
+  useEffect(() => {
+    function handleClickFora(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownAberto(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickFora)
+    return () => document.removeEventListener('mousedown', handleClickFora)
+  }, [])
 
   const itensNav = [
     { id: 'upload', label: 'Novo Currículo', icone: FileText },
@@ -59,7 +83,7 @@ function Header() {
           <LogoVektor tamanho={26} />
         </button>
 
-        {/* Menu Horizontal de Navegação com semântica e estados de acessibilidade */}
+        {/* Menu Horizontal de Navegação */}
         <nav className="header-nav" aria-label="Navegação principal">
           {itensNav.map((item) => {
             const Icone = item.icone
@@ -86,15 +110,101 @@ function Header() {
           })}
         </nav>
 
-        {/* Status da Plataforma */}
-        <div className="header-status" role="status" aria-label="Status da Plataforma: Vektor Carreiras Ativo">
-          <span
-            style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--success)' }}
-            aria-hidden="true"
-          />
-          <span style={{ fontSize: '11.5px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-            Vektor Carreiras
-          </span>
+        {/* Área de Autenticação / Perfil do Usuário */}
+        <div className="header-auth-area" ref={dropdownRef}>
+          {!usuario ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="header-btn-ghost"
+                onClick={() => abrirModalAuth('login')}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                className="header-btn-cta"
+                onClick={() => abrirModalAuth('cadastro')}
+              >
+                Criar Conta Grátis
+              </button>
+            </div>
+          ) : (
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="header-perfil-btn"
+                onClick={() => setDropdownAberto(!dropdownAberto)}
+                aria-expanded={dropdownAberto}
+                aria-haspopup="true"
+              >
+                <div className="header-avatar-circle">
+                  {usuario.avatar || 'LM'}
+                </div>
+                <div className="header-usuario-texto">
+                  <span className="header-usuario-nome">{usuario.nome}</span>
+                  <span className="header-plano-badge">{usuario.plano || 'Gratuito'}</span>
+                </div>
+                <ChevronDown size={14} color="var(--text-muted)" style={{ transition: 'transform 0.15s ease', transform: dropdownAberto ? 'rotate(180deg)' : 'none' }} />
+              </button>
+
+              {dropdownAberto && (
+                <div className="header-dropdown-menu" role="menu">
+                  <div className="header-dropdown-header">
+                    <p className="header-dropdown-user-nome">{usuario.nome}</p>
+                    <p className="header-dropdown-user-email">{usuario.email}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                      <span className="header-plano-pill">Plano {usuario.plano || 'Gratuito'}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>• Vektor Free</span>
+                    </div>
+                  </div>
+
+                  <div className="header-dropdown-divisor" />
+
+                  <button
+                    type="button"
+                    className="header-dropdown-item"
+                    onClick={() => {
+                      setTelaAtiva('historico')
+                      setDropdownAberto(false)
+                    }}
+                    role="menuitem"
+                  >
+                    <History size={14} />
+                    <span>Histórico Salvo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="header-dropdown-item"
+                    onClick={() => {
+                      setTelaAtiva('configuracoes')
+                      setDropdownAberto(false)
+                    }}
+                    role="menuitem"
+                  >
+                    <Settings size={14} />
+                    <span>Ajustes da Conta</span>
+                  </button>
+
+                  <div className="header-dropdown-divisor" />
+
+                  <button
+                    type="button"
+                    className="header-dropdown-item header-dropdown-item-logout"
+                    onClick={() => {
+                      fazerLogout()
+                      setDropdownAberto(false)
+                    }}
+                    role="menuitem"
+                  >
+                    <LogOut size={14} />
+                    <span>Sair da Conta</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
