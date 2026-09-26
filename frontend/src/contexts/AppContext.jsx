@@ -33,6 +33,7 @@ export function AppProvider({ children }) {
   const [resultado, setResultadoState] = useLocalStorage('vektor_resultado', null)
   const [vagaParaAdaptar, setVagaParaAdaptar] = useLocalStorage('vektor_vaga_adaptar', null)
   const [vagaParaDesafio, setVagaParaDesafio] = useLocalStorage('vektor_vaga_desafio', null)
+  const [vagaParaRoadmap, setVagaParaRoadmap] = useLocalStorage('vektor_vaga_roadmap', null)
   const [usuario, setUsuario] = useLocalStorage('vektor_usuario', null)
   const [modalAuthAberta, setModalAuthAberta] = useState(false)
   const [modoAuth, setModoAuth] = useState('login')
@@ -187,10 +188,16 @@ export function AppProvider({ children }) {
     setTelaAtiva('desafios')
   }
 
+  function abrirRoadmapParaVaga(vaga) {
+    setVagaParaRoadmap(vaga)
+    setTelaAtiva('roadmap')
+  }
+
   function limparAnaliseAtiva() {
     setResultado(null)
     setVagaParaAdaptar(null)
     setVagaParaDesafio(null)
+    setVagaParaRoadmap(null)
     setTelaAtiva('upload')
   }
 
@@ -223,6 +230,9 @@ export function AppProvider({ children }) {
     vagaParaDesafio,
     setVagaParaDesafio,
     abrirDesafiosParaVaga,
+    vagaParaRoadmap,
+    setVagaParaRoadmap,
+    abrirRoadmapParaVaga,
     limparAnaliseAtiva,
     carregandoSessao,
     estaDesbloqueando,
