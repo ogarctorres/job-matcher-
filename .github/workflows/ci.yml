@@ -22,7 +22,7 @@ jobs:
           pip install pytest
       - name: Run Pytest
         run: |
-          pytest backend/tests/
+          PYTHONPATH=backend TESTING=1 pytest backend/tests/ -v
 
   frontend-build:
     runs-on: ubuntu-latest
