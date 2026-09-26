@@ -182,6 +182,19 @@ export const api = {
     })
   },
 
+  // Roadmap & Skill Gap de 30 Dias
+  obterTrilhasRoadmap: () => request('/roadmap/trilhas'),
+  gerarRoadmap: ({ skillsCandidato, cargoAlvo, vagaAlvo }) => {
+    return request('/roadmap/gerar', {
+      method: 'POST',
+      body: JSON.stringify({
+        skills_candidato: skillsCandidato || [],
+        cargo_alvo: cargoAlvo || null,
+        vaga_alvo: vagaAlvo || null,
+      }),
+    })
+  },
+
   // Health
   checarSaude: () => request('/health'),
 }
