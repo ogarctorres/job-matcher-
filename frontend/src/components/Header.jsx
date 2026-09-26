@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronDown,
   LogOut,
+  Compass,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import LogoVektor from './LogoVektor'
@@ -63,6 +64,12 @@ function Header() {
       label: 'Adequar p/ Vaga',
       icone: FileCheck,
       destaque: true,
+    },
+    {
+      id: 'roadmap',
+      label: 'Plano 30D',
+      icone: Compass,
+      badge: 'Novo',
     },
     { id: 'dashboard', label: 'Tendências', icone: TrendingUp },
     { id: 'historico', label: 'Histórico', icone: History },

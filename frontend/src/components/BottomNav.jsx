@@ -143,6 +143,15 @@ function BottomNav() {
               <button
                 type="button"
                 className="bottom-nav-drawer-btn"
+                onClick={() => navegar('roadmap')}
+              >
+                <Compass size={18} color="#c084fc" />
+                <span>Plano 30D & Skill Gap</span>
+              </button>
+
+              <button
+                type="button"
+                className="bottom-nav-drawer-btn"
                 onClick={() => navegar('dashboard')}
               >
                 <TrendingUp size={18} color="var(--accent)" />

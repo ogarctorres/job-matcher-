@@ -15,6 +15,7 @@ const TelaAdaptarCurriculo = lazy(() => import('./components/TelaAdaptarCurricul
 const TelaDesafios = lazy(() => import('./components/TelaDesafios'))
 const TelaDashboard = lazy(() => import('./components/TelaDashboard'))
 const TelaHistorico = lazy(() => import('./components/TelaHistorico'))
+const TelaRoadmap = lazy(() => import('./components/TelaRoadmap'))
 const TelaConfiguracoes = lazy(() => import('./components/TelaConfiguracoes'))
 
 class ErrorBoundary extends Component {
@@ -157,6 +158,7 @@ function ConteudoPrincipal() {
             {telaAtiva === 'adaptar' && <TelaAdaptarCurriculo />}
             {telaAtiva === 'dashboard' && <TelaDashboard />}
             {telaAtiva === 'historico' && <TelaHistorico />}
+            {telaAtiva === 'roadmap' && <TelaRoadmap />}
             {telaAtiva === 'configuracoes' && <TelaConfiguracoes />}
           </Suspense>
         </ErrorBoundary>
