@@ -6,6 +6,8 @@
 
 > **Plataforma de Inteligência de Carreira com IA e Dados para Estudantes e Profissionais de Tecnologia**
 
+[![CI Pipeline](https://github.com/ogarctorres/job-matcher-/actions/workflows/ci.yml/badge.svg)](https://github.com/ogarctorres/job-matcher-/actions)
+[![Pytest Tests](https://img.shields.io/badge/Tests-88%20Passing-success?logo=pytest&logoColor=white)](https://github.com/ogarctorres/job-matcher-/actions)
 [![Vercel Deploy](https://img.shields.io/badge/Frontend-Vercel_Live-black?logo=vercel&logoColor=white)](https://vektor-career.vercel.app)
 [![Render API](https://img.shields.io/badge/API-Render_Online-46E3B7?logo=render&logoColor=white)](https://vektor-0nam.onrender.com)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
