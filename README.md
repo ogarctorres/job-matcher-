@@ -34,6 +34,7 @@ O **Vektor** é uma aplicação Full Stack moderna que utiliza Inteligência Art
 - ✉️ **Gerador de Cartas de Apresentação**: Criação instantânea de cartas de apresentação personalizadas para cada oportunidade.
 - 💾 **Histórico Persistente (SQLite)**: Histórico completo de análises armazenado localmente para acompanhamento de evolução.
 - 📊 **Dashboard & Tendências de Mercado**: Mineração de dados exibindo as tecnologias e habilidades mais demandadas no mercado de estágio.
+- 🗺️ **Skill Gap & Roadmap de 30 Dias**: Mapeamento de lacunas técnicas (críticas e diferenciais) com cronograma semanal acionável, projetos práticos de portfólio, checklist interativo e dicas de entrevista (STAR).
 
 ---
 
@@ -45,21 +46,21 @@ O **Vektor** é uma aplicação Full Stack moderna que utiliza Inteligência Art
 - **Inteligência Artificial**: Google Gemini Flash API (`gemini-flash-latest` / `gemini-3.5-flash-lite`) com tolerância a falhas
 - **Banco de Dados**: SQLite + SQLAlchemy ORM
 - **Processamento de Dados**: Pydantic v2, PyPDF, Requests
-- **Testes Automatizados**: Pytest, FastAPI TestClient
+- **Testes Automatizados**: Pytest, FastAPI TestClient (88 testes automatizados cobrindo ponta a ponta)
 
 ### Frontend
 - **Biblioteca**: React 19 + Vite
 - **Navegação & UI**: Design System Dark SaaS com Lucide Icons
 - **Gerenciamento de Estado**: React Context API
-- **Comunicação**: Axios com sanitização de endpoints e tratamento de erros
+- **Comunicação**: Axios / Fetch com interceptadores de autenticação Bearer e sanitização de endpoints
 
 ---
 
 ## 🗺️ Roadmap de Evolução
 
 - [x] **v1.0**: Protótipo inicial com Ollama local e busca básica.
-- [x] **v2.0 (Atual)**: Arquitetura em nuvem (Gemini Cloud), batch matching 10x mais rápido, reescrita ATS, nova UI SaaS e deploy completo em produção.
-- [ ] **v2.1**: Integração com novos agregadores de vagas e filtros avançados por estado/remoto.
+- [x] **v2.0**: Arquitetura em nuvem (Gemini Cloud), batch matching 10x mais rápido, reescrita ATS, nova UI SaaS e deploy completo em produção.
+- [x] **v2.1 (Atual)**: Módulo de Treino LeetCode, Analisador de Skill Gap & Plano de Estudos de 30 Dias com checklist persistente.
 - [ ] **v3.0**: Módulo de métricas de evolução temporal do perfil profissional e exportação direta de currículos formatados em PDF.
 
 ---
