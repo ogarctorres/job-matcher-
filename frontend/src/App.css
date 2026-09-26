@@ -2574,3 +2574,25 @@
     visibility: hidden;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Tela Roadmap & Skill Gap 30 Dias (SaaS Dark Design)
+ * --------------------------------------------------------------------------- */
+.tela-roadmap {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.roadmap-card-semana {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.roadmap-card-semana:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 768px) {
+  .tela-roadmap {
+    padding: 16px 12px 100px !important;
+  }
+}
