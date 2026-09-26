@@ -21,6 +21,7 @@ from app.routes.health import router as health_router
 from app.routes.adaptador import router as adaptador_router
 from app.routes.vagas import router as vagas_router
 from app.routes.desafios import router as desafios_router
+from app.routes.roadmap import router as roadmap_router
 from app.database import criar_tabelas
 from app.models import Analise  # noqa: F401 — registra modelos no SQLAlchemy
 
@@ -71,7 +72,7 @@ MAX_REQ_IA_MINUTO = 5  # Limite rígido para rotas de alto custo computacional/I
 _historico_ip_geral: dict[str, list[float]] = defaultdict(list)
 _historico_ip_ia: dict[str, list[float]] = defaultdict(list)
 
-ROTAS_IA_PESADAS = {"/curriculo", "/adaptar-curriculo", "/gerar-curriculo-generico", "/carta"}
+ROTAS_IA_PESADAS = {"/curriculo", "/adaptar-curriculo", "/gerar-curriculo-generico", "/carta", "/roadmap/gerar"}
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -133,6 +134,7 @@ app.include_router(health_router)
 app.include_router(adaptador_router)
 app.include_router(vagas_router)
 app.include_router(desafios_router)
+app.include_router(roadmap_router)
 
 
 # Startup
