@@ -9,13 +9,14 @@ import {
   ChevronUp,
   FileCheck,
   Code2,
+  Target,
 } from 'lucide-react'
 import { api } from '../services/api'
 import { useApp } from '../contexts/AppContext'
 import ModalCarta from './ModalCarta'
 
 function CardVaga({ vaga, dadosCurriculo }) {
-  const { abrirAdaptacaoParaVaga, abrirDesafiosParaVaga } = useApp()
+  const { abrirAdaptacaoParaVaga, abrirDesafiosParaVaga, abrirRoadmapParaVaga } = useApp()
   const [sugestoes, setSugestoes] = useState(null)
   const [carregandoSugestao, setCarregandoSugestao] = useState(false)
   const [erroSugestao, setErroSugestao] = useState(null)
@@ -157,6 +158,18 @@ function CardVaga({ vaga, dadosCurriculo }) {
           >
             <Code2 size={14} color="#60a5fa" aria-hidden="true" />
             <span>Treinar no LeetCode</span>
+          </button>
+
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => abrirRoadmapParaVaga(vaga)}
+            aria-label={`Ver plano de estudos e gaps para ${vaga.titulo}`}
+            style={{ padding: '7px 14px', fontSize: '12.5px', borderColor: 'rgba(168, 85, 247, 0.4)' }}
+            title="Ver roadmap de 30 dias para cobrir os requisitos faltantes desta oportunidade"
+          >
+            <Target size={14} color="#c084fc" aria-hidden="true" />
+            <span>Plano 30D</span>
           </button>
         </div>
 
