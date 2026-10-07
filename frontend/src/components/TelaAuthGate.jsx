@@ -9,14 +9,16 @@ import {
   Sparkles,
   ShieldCheck,
 } from 'lucide-react'
+import { useApp } from '../contexts/AppContext'
 import {
   entrarComEmail,
   cadastrarComEmail,
   entrarComGoogle,
-} from '../services/supabase'
+} from '../services/auth'
 import LogoVektor from './LogoVektor'
 
 function TelaAuthGate() {
+  const { fazerLogin } = useApp()
   const [modo, setModo] = useState('login') // 'login' | 'cadastro'
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -38,24 +40,24 @@ function TelaAuthGate() {
 
     try {
       if (modo === 'login') {
-        await entrarComEmail(email.trim(), senha)
+        const res = await entrarComEmail(email.trim(), senha)
+        if (res?.usuario) {
+          fazerLogin(res.usuario)
+        }
         setSucesso(true)
       } else {
         const res = await cadastrarComEmail(email.trim(), senha, nome.trim())
-        if (res?.user && !res?.session) {
-          setAvisoConfirmacao(true)
-        } else {
-          setSucesso(true)
+        if (res?.usuario) {
+          fazerLogin(res.usuario)
         }
+        setSucesso(true)
       }
     } catch (err) {
       console.error('Erro na autenticação:', err)
       let msg = err.message || 'Erro ao processar autenticação.'
-      if (msg.includes('Invalid login credentials')) {
+      if (msg.includes('Credenciais inválidas') || msg.includes('Invalid')) {
         msg = 'E-mail ou senha incorretos. Verifique suas credenciais.'
-      } else if (msg.includes('Password should be at least')) {
-        msg = 'A senha deve conter no mínimo 6 caracteres.'
-      } else if (msg.includes('User already registered')) {
+      } else if (msg.includes('já está cadastrado') || msg.includes('already registered')) {
         msg = 'Este e-mail já está cadastrado. Tente entrar na sua conta.'
       }
       setErroAuth(msg)
@@ -69,10 +71,14 @@ function TelaAuthGate() {
     setErroAuth(null)
 
     try {
-      await entrarComGoogle()
+      const res = await entrarComGoogle()
+      if (res?.usuario) {
+        fazerLogin(res.usuario)
+      }
+      setSucesso(true)
     } catch (err) {
-      console.error('Erro Google OAuth:', err)
-      setErroAuth(err.message || 'Erro ao iniciar autenticação com Google.')
+      console.error('Erro no acesso:', err)
+      setErroAuth(err.message || 'Erro ao iniciar autenticação.')
       setCarregando(false)
     }
   }
@@ -278,7 +284,7 @@ function TelaAuthGate() {
           <footer className="auth-gate-card-footer">
             <div className="auth-gate-seguranca">
               <ShieldCheck size={13} color="var(--success)" />
-              <span>Autenticação Supabase • PostgreSQL com RLS ativo</span>
+              <span>Autenticação Segura • SQLite & JWT com isolamento de dados</span>
             </div>
             <div className="auth-gate-status-pill">
               <span
@@ -291,7 +297,7 @@ function TelaAuthGate() {
                 }}
               />
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                ● Conexão Segura Supabase Ativa
+                ● Conexão Segura Local Ativa
               </span>
             </div>
           </footer>

@@ -1,13 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import {
-  supabase,
-  isSupabaseConfigured,
-  obterPerfil,
-  deslogar,
-  salvarAnaliseCurriculo,
-  buscarHistoricoDoBanco,
-} from '../services/supabase'
+import { obterSessaoAtual, deslogar } from '../services/auth'
 
 const AppContext = createContext(null)
 
@@ -42,57 +35,27 @@ export function AppProvider({ children }) {
   const [historico, setHistorico] = useState([])
   const [analiseSelecionada, setAnaliseSelecionada] = useState(null)
 
-  // Salva no estado local e persiste automaticamente no Supabase (se autenticado)
+  // Salva no estado local e persiste automaticamente
   function setResultado(novoResultado) {
     setResultadoState(novoResultado)
-    if (novoResultado && usuario?.id && isSupabaseConfigured) {
-      salvarAnaliseCurriculo(usuario.id, novoResultado).then((relatorioSalvo) => {
-        if (relatorioSalvo) {
-          setHistorico((prev) => [relatorioSalvo, ...prev.filter((r) => r.id !== relatorioSalvo.id)])
-        }
-      })
-    }
   }
 
   const [carregandoSessao, setCarregandoSessao] = useState(true)
   const [estaDesbloqueando, setEstaDesbloqueando] = useState(false)
 
-  // Sincronização em tempo real de sessão com Supabase Auth
+  // Sincronização de sessão nativa e local
   useEffect(() => {
     let montado = true
 
-    if (!isSupabaseConfigured || !supabase) {
-      setCarregandoSessao(false)
-      return
-    }
-
     async function sincronizarSessao() {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const sessao = await obterSessaoAtual()
         if (!montado) return
-        if (session?.user) {
-          const perfil = await obterPerfil(session.user.id)
-          const usuarioSupabase = {
-            id: session.user.id,
-            email: session.user.email,
-            nome: perfil?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-            avatar: (perfil?.full_name || session.user.email || 'VK').slice(0, 2).toUpperCase(),
-            avatarUrl: perfil?.avatar_url || session.user.user_metadata?.avatar_url,
-            plano: perfil?.plan || 'Gratuito',
-            membroDesde: new Date(session.user.created_at).getFullYear(),
-          }
-          setUsuario(usuarioSupabase)
-
-          // Carrega histórico relacional do usuário
-          const relatorios = await buscarHistoricoDoBanco(session.user.id)
-          if (montado && relatorios?.length > 0) {
-            setHistorico(relatorios)
-          }
-        } else {
-          setUsuario(null)
+        if (sessao?.usuario) {
+          setUsuario(sessao.usuario)
         }
       } catch (err) {
-        console.warn('Aviso na sincronização com Supabase:', err)
+        console.warn('Aviso ao sincronizar sessão:', err)
       } finally {
         if (montado) {
           setCarregandoSessao(false)
@@ -102,42 +65,8 @@ export function AppProvider({ children }) {
 
     sincronizarSessao()
 
-    // Listener para eventos de login, logout e OAuth redirect
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (evento, session) => {
-      if (!montado) return
-      if (session?.user) {
-        // Dispara efeito de transição de desbloqueio
-        setEstaDesbloqueando(true)
-        setTimeout(() => {
-          if (montado) setEstaDesbloqueando(false)
-        }, 1000)
-
-        const perfil = await obterPerfil(session.user.id)
-        const usuarioSupabase = {
-          id: session.user.id,
-          email: session.user.email,
-          nome: perfil?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-          avatar: (perfil?.full_name || session.user.email || 'VK').slice(0, 2).toUpperCase(),
-          avatarUrl: perfil?.avatar_url || session.user.user_metadata?.avatar_url,
-          plano: perfil?.plan || 'Gratuito',
-          membroDesde: new Date(session.user.created_at).getFullYear(),
-        }
-        setUsuario(usuarioSupabase)
-        setCarregandoSessao(false)
-
-        const relatorios = await buscarHistoricoDoBanco(session.user.id)
-        if (montado && relatorios?.length > 0) {
-          setHistorico(relatorios)
-        }
-      } else if (evento === 'SIGNED_OUT') {
-        setUsuario(null)
-        setCarregandoSessao(false)
-      }
-    })
-
     return () => {
       montado = false
-      subscription?.unsubscribe()
     }
   }, [setUsuario])
 
@@ -168,11 +97,9 @@ export function AppProvider({ children }) {
 
   async function fazerLogout() {
     try {
-      if (isSupabaseConfigured) {
-        await deslogar()
-      }
+      await deslogar()
     } catch (err) {
-      console.warn('Erro ao deslogar do Supabase:', err)
+      console.warn('Erro ao encerrar sessão:', err)
     } finally {
       setUsuario(null)
     }

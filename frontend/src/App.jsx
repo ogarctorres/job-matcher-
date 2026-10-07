@@ -92,7 +92,7 @@ function TelaCarregandoFallback() {
 function ConteudoPrincipal() {
   const { usuario, carregandoSessao, estaDesbloqueando, telaAtiva } = useApp()
 
-  // 1. Enquanto o Supabase valida a sessão segura no carregamento inicial
+  // 1. Enquanto valida a sessão segura no carregamento inicial
   if (carregandoSessao) {
     return (
       <div

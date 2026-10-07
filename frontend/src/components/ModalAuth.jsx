@@ -14,11 +14,11 @@ import {
   entrarComEmail,
   cadastrarComEmail,
   entrarComGoogle,
-} from '../services/supabase'
+} from '../services/auth'
 import LogoVektor from './LogoVektor'
 
 function ModalAuth() {
-  const { modalAuthAberta, fecharModalAuth, modoAuth, setModoAuth } = useApp()
+  const { modalAuthAberta, fecharModalAuth, modoAuth, setModoAuth, fazerLogin } = useApp()
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -45,26 +45,26 @@ function ModalAuth() {
 
     try {
       if (modoAuth === 'login') {
-        await entrarComEmail(email.trim(), senha)
+        const res = await entrarComEmail(email.trim(), senha)
+        if (res?.usuario) {
+          fazerLogin(res.usuario)
+        }
         setSucesso(true)
-        setTimeout(() => fecharModalAuth(), 600)
+        setTimeout(() => fecharModalAuth(), 500)
       } else {
         const res = await cadastrarComEmail(email.trim(), senha, nome.trim())
-        if (res?.user && !res?.session) {
-          setAvisoConfirmacao(true)
-        } else {
-          setSucesso(true)
-          setTimeout(() => fecharModalAuth(), 700)
+        if (res?.usuario) {
+          fazerLogin(res.usuario)
         }
+        setSucesso(true)
+        setTimeout(() => fecharModalAuth(), 500)
       }
     } catch (err) {
-      console.error('Erro na autenticação Supabase:', err)
+      console.error('Erro na autenticação:', err)
       let msg = err.message || 'Erro ao processar autenticação.'
-      if (msg.includes('Invalid login credentials')) {
+      if (msg.includes('Credenciais inválidas') || msg.includes('Invalid')) {
         msg = 'E-mail ou senha incorretos. Verifique seus dados.'
-      } else if (msg.includes('Password should be at least')) {
-        msg = 'A senha deve conter no mínimo 6 caracteres.'
-      } else if (msg.includes('User already registered')) {
+      } else if (msg.includes('já está cadastrado') || msg.includes('already registered')) {
         msg = 'Este e-mail já está cadastrado. Tente fazer login.'
       }
       setErroAuth(msg)
@@ -78,10 +78,15 @@ function ModalAuth() {
     setErroAuth(null)
 
     try {
-      await entrarComGoogle()
+      const res = await entrarComGoogle()
+      if (res?.usuario) {
+        fazerLogin(res.usuario)
+      }
+      setSucesso(true)
+      setTimeout(() => fecharModalAuth(), 500)
     } catch (err) {
-      console.error('Erro Google OAuth:', err)
-      setErroAuth(err.message || 'Erro ao iniciar autenticação com Google.')
+      console.error('Erro no login convidado:', err)
+      setErroAuth(err.message || 'Erro ao iniciar login.')
       setCarregando(false)
     }
   }
@@ -425,7 +430,7 @@ function ModalAuth() {
           )}
         </div>
 
-        {/* Status da Conexão Supabase & Segurança */}
+        {/* Status da Conexão Segura & Criptografia */}
         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
             <span
@@ -437,12 +442,12 @@ function ModalAuth() {
               }}
             />
             <span style={{ color: 'var(--text-secondary)' }}>
-              ● Supabase Auth & RLS Ativos
+              ● Autenticação Local Segura (JWT) & SQLite Ativos
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-muted)', fontSize: '10.5px' }}>
             <ShieldCheck size={12} color="var(--success)" />
-            <span>Credenciais isoladas e criptografadas.</span>
+            <span>Sessão criptografada e dados protegidos localmente.</span>
           </div>
         </div>
       </div>
