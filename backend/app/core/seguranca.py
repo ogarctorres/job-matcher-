@@ -1,46 +1,76 @@
 """
-Módulo de Segurança e Autenticação — Validação de Sessão Supabase (JWT).
-Protege endpoints de negócio contra acessos anônimos e ataques de BOLA/IDOR.
+Módulo de Segurança e Autenticação — Validação e Gestão de Sessão JWT Nativa.
+Protege endpoints de negócio contra acessos não autorizados sem dependência de serviços externos.
 """
 
 import os
-import time
+import hmac
+import hashlib
+import secrets
 import logging
-from typing import Optional, Dict, Any, Tuple
-import requests
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Dict, Any
+import jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-logger = logging.getLogger(__name__)
+from app.core.config import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRACAO_MINUTOS
 
-# Configurações do Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://motfutoaozcbsllnxstp.supabase.co").rstrip("/")
-SUPABASE_KEY = os.getenv(
-    "SUPABASE_PUBLISHABLE_KEY",
-    os.getenv("SUPABASE_ANON_KEY", "sb_publishable_xS4I92oBd5qxL6QtBp0WVQ_d_rUtZ6E")
-)
+logger = logging.getLogger(__name__)
 
 # Esquema de autenticação HTTP Bearer (auto_error=False para controle granular de exceções)
 security_bearer = HTTPBearer(auto_error=False)
 
-# Cache em memória para validação de tokens (TTL = 60s)
-_cache_tokens: Dict[str, Tuple[float, Dict[str, Any]]] = {}
-CACHE_TTL_SEGUNDOS = 60
+
+def gerar_hash_senha(senha: str) -> str:
+    """Gera hash PBKDF2-HMAC-SHA256 com salt aleatório seguro."""
+    salt = secrets.token_hex(16)
+    hash_obj = hashlib.pbkdf2_hmac(
+        "sha256",
+        senha.encode("utf-8"),
+        salt.encode("utf-8"),
+        100_000,
+    )
+    return f"{salt}${hash_obj.hex()}"
 
 
-def _limpar_cache_expirado():
-    """Remove entradas expiradas do cache em memória para economizar recursos."""
-    agora = time.time()
-    expirados = [k for k, (exp, _) in _cache_tokens.items() if agora > exp]
-    for k in expirados:
-        _cache_tokens.pop(k, None)
+def verificar_senha(senha: str, hash_armazenado: str) -> bool:
+    """Verifica se a senha em texto puro confere com o hash armazenado de forma constante no tempo."""
+    try:
+        partes = hash_armazenado.split("$")
+        if len(partes) != 2:
+            return False
+        salt, hash_real = partes
+        hash_calculado = hashlib.pbkdf2_hmac(
+            "sha256",
+            senha.encode("utf-8"),
+            salt.encode("utf-8"),
+            100_000,
+        ).hex()
+        return hmac.compare_digest(hash_real, hash_calculado)
+    except Exception:
+        return False
 
 
-def validar_token_supabase(token: str) -> Dict[str, Any]:
+def gerar_token_jwt(dados_usuario: Dict[str, Any], expira_em_minutos: Optional[int] = None) -> str:
+    """Gera um token JWT assinado para a sessão do usuário."""
+    minutos = expira_em_minutos if expira_em_minutos is not None else JWT_EXPIRACAO_MINUTOS
+    expiracao = datetime.now(timezone.utc) + timedelta(minutes=minutos)
+
+    payload = {
+        "sub": str(dados_usuario.get("id", "")),
+        "email": str(dados_usuario.get("email", "")),
+        "nome": str(dados_usuario.get("nome", "")),
+        "role": str(dados_usuario.get("role", "authenticated")),
+        "exp": expiracao,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def validar_token_jwt(token: str) -> Dict[str, Any]:
     """
-    Valida um token de acesso junto à API de identidade do Supabase (GoTrue).
-    - Verifica assinatura criptográfica, expiração, revogação e status do usuário.
-    - Utiliza cache em memória de curta duração (60s) para evitar latência de rede em rajadas.
+    Valida assinatura e expiração de token JWT nativo sem dependência de APIs externas.
     """
     if not token or not token.strip():
         raise HTTPException(
@@ -50,65 +80,44 @@ def validar_token_supabase(token: str) -> Dict[str, Any]:
         )
 
     token = token.strip()
-    agora = time.time()
 
-    # 1. Checa cache em memória
-    if token in _cache_tokens:
-        exp, dados = _cache_tokens[token]
-        if agora < exp:
-            return dados
-        else:
-            _cache_tokens.pop(token, None)
-
-    # 2. Valida contra o endpoint oficial do Supabase
-    endpoint_user = f"{SUPABASE_URL}/auth/v1/user"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "apikey": SUPABASE_KEY,
-    }
-
-    try:
-        response = requests.get(endpoint_user, headers=headers, timeout=5)
-    except requests.RequestException as erro_rede:
-        logger.error(f"[seguranca] Falha ao conectar ao serviço de autenticação do Supabase: {erro_rede}")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Serviço de autenticação temporariamente indisponível. Tente novamente.",
-        )
-
-    if response.status_code != 200:
-        logger.warning(f"[seguranca] Token rejeitado pelo Supabase ({response.status_code}): {response.text}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credencial inválida ou sessão expirada. Faça login novamente.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    try:
-        payload = response.json()
-        user_id = payload.get("id")
-        email = payload.get("email", "")
-
-        if not user_id:
-            raise ValueError("ID de usuário ausente no payload do Supabase")
-
-        dados_usuario = {
-            "id": str(user_id),
-            "email": str(email),
-            "role": payload.get("role", "authenticated"),
+    # Suporte para testes automatizados rápidos
+    if token.startswith("test_") or os.getenv("TESTING") == "1":
+        return {
+            "id": "usuario_teste_123",
+            "email": "teste@vektor.com",
+            "nome": "Usuário Teste",
+            "role": "authenticated",
         }
 
-        # Armazena no cache
-        _limpar_cache_expirado()
-        _cache_tokens[token] = (agora + CACHE_TTL_SEGUNDOS, dados_usuario)
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("sub") or payload.get("id")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token com payload inválido: identificador do usuário ausente.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-        return dados_usuario
+        return {
+            "id": str(user_id),
+            "email": str(payload.get("email", "")),
+            "nome": str(payload.get("nome", "")),
+            "role": str(payload.get("role", "authenticated")),
+        }
 
-    except Exception as erro_parse:
-        logger.error(f"[seguranca] Erro ao processar payload do Supabase: {erro_parse}")
+    except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Falha ao autenticar usuário.",
+            detail="Sessão expirada. Faça login novamente.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except jwt.PyJWTError as e:
+        logger.warning(f"[seguranca] Token JWT inválido: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credencial inválida ou token corrompido.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -131,11 +140,7 @@ async def obter_usuario_atual(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Token de teste rápido para automação de testes
-    if credenciais.credentials.startswith("test_") or os.getenv("TESTING") == "1":
-        return {"id": "usuario_teste_123", "email": "teste@vektor.com", "role": "authenticated"}
-
-    return validar_token_supabase(credenciais.credentials)
+    return validar_token_jwt(credenciais.credentials)
 
 
 async def obter_usuario_opcional(
@@ -149,6 +154,6 @@ async def obter_usuario_opcional(
         return None
 
     try:
-        return validar_token_supabase(credenciais.credentials)
+        return validar_token_jwt(credenciais.credentials)
     except Exception:
         return None

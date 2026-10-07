@@ -31,6 +31,11 @@ CORS_ORIGINS = [origem.strip() for origem in CORS_ORIGINS_RAW.split(",") if orig
 # --- Upload ---
 TAMANHO_MAXIMO_MB = int(os.getenv("TAMANHO_MAXIMO_MB", "8"))
 
+# --- Autenticação JWT ---
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "vektor-super-secret-key-change-in-production-2026")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_EXPIRACAO_MINUTOS = int(os.getenv("JWT_EXPIRACAO_MINUTOS", "1440"))  # 24 horas
+
 
 def validar_config():
     """Valida configurações obrigatórias no startup."""
