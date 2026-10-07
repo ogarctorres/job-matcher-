@@ -22,6 +22,7 @@ from app.routes.adaptador import router as adaptador_router
 from app.routes.vagas import router as vagas_router
 from app.routes.desafios import router as desafios_router
 from app.routes.roadmap import router as roadmap_router
+from app.routes.auth import router as auth_router
 from app.database import criar_tabelas
 from app.models import Analise  # noqa: F401 — registra modelos no SQLAlchemy
 
@@ -135,6 +136,7 @@ app.include_router(adaptador_router)
 app.include_router(vagas_router)
 app.include_router(desafios_router)
 app.include_router(roadmap_router)
+app.include_router(auth_router)
 
 
 # Startup
