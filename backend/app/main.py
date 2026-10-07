@@ -6,6 +6,7 @@ import os
 import time
 import logging
 from collections import defaultdict
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -35,11 +36,20 @@ logging.basicConfig(
 # Validar configuração
 validar_config()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    criar_tabelas()
+    logging.getLogger(__name__).info("Banco de dados SQLite inicializado ✅")
+    yield
+
+
 # Criar app
 app = FastAPI(
     title="Vektor API",
     description="Plataforma de Inteligência de Vagas e Carreira com IA.",
     version=VERSAO_SISTEMA,
+    lifespan=lifespan,
 )
 
 # CORS
@@ -137,13 +147,6 @@ app.include_router(vagas_router)
 app.include_router(desafios_router)
 app.include_router(roadmap_router)
 app.include_router(auth_router)
-
-
-# Startup
-@app.on_event("startup")
-def startup():
-    criar_tabelas()
-    logging.getLogger(__name__).info("Banco de dados inicializado ✅")
 
 
 @app.get("/")
