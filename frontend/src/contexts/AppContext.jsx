@@ -84,12 +84,17 @@ export function AppProvider({ children }) {
     const nome = dados.nome || dados.email?.split('@')[0] || 'Usuário'
     const email = dados.email || ''
     const usuarioLogado = {
+      id: dados.id || 'usr-' + Date.now(),
       nome,
       email,
       avatar: (nome || 'VK').slice(0, 2).toUpperCase(),
       plano: dados.plano || 'Gratuito',
       membroDesde: '2026',
     }
+    setEstaDesbloqueando(true)
+    setTimeout(() => {
+      setEstaDesbloqueando(false)
+    }, 1000)
     setUsuario(usuarioLogado)
     setModalAuthAberta(false)
     return usuarioLogado

@@ -16,6 +16,7 @@ def healthcheck():
     return {
         "status": "online",
         "ia_provider": IA_PROVIDER,
+        "banco_dados": "sqlite_ativo",
         "gemini_disponivel": gemini_configurado,
         "jooble_disponivel": jooble_configurado,
     }

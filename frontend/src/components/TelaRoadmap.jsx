@@ -3,23 +3,19 @@ import {
   Target,
   CheckCircle2,
   Circle,
-  Sparkles,
   Clock,
   BookOpen,
-  Briefcase,
-  Award,
-  ArrowRight,
-  RotateCcw,
   Building2,
   Flame,
   Check,
   Compass,
+  AlertCircle,
 } from 'lucide-react'
 import { useApp } from '../contexts/AppContext'
 import { api } from '../services/api'
 
 export default function TelaRoadmap() {
-  const { resultado, vagaParaRoadmap, setVagaParaRoadmap, setTelaAtiva } = useApp()
+  const { resultado, vagaParaRoadmap, setVagaParaRoadmap } = useApp()
 
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
@@ -155,6 +151,27 @@ export default function TelaRoadmap() {
           >
             Focar no Perfil Geral
           </button>
+        </div>
+      )}
+
+      {erro && (
+        <div
+          role="status"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 16px',
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            border: '1px solid rgba(234, 179, 8, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--text-secondary)',
+            fontSize: '12.5px',
+            marginBottom: '20px',
+          }}
+        >
+          <AlertCircle size={16} color="var(--warning)" style={{ flexShrink: 0 }} />
+          <span>{erro}</span>
         </div>
       )}
 
