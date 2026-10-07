@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { obterToken } from './auth'
 
 /**
  * Cliente HTTP centralizado para consumo da API do Job Matcher.
@@ -13,14 +13,11 @@ async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${caminhoLimpo}`
   const headers = options.headers || {}
 
-  // Injeta automaticamente o token JWT da sessão ativa do Supabase (Autenticação Bearer)
+  // Injeta automaticamente o token JWT da sessão ativa local (Autenticação Bearer)
   try {
-    if (supabase) {
-      const { data } = await supabase.auth.getSession()
-      const token = data?.session?.access_token
-      if (token && !headers['Authorization']) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
+    const token = obterToken()
+    if (token && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${token}`
     }
   } catch {
     // Ignora restrições temporárias de sessão
