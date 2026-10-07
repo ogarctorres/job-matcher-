@@ -1,6 +1,6 @@
 /**
  * Módulo de Autenticação Nativa — Gestão de Sessão Local e Integração JWT.
- * Substitui serviços externos (Supabase) por autenticação nativa desacoplada e independente.
+ * Autenticação nativa desacoplada e independente com JWT e armazenamento local.
  */
 
 const rawApiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'

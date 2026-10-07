@@ -162,7 +162,7 @@ function ModalAuth() {
           </p>
         </div>
 
-        {/* Alerta de Confirmação por E-mail (Supabase) */}
+        {/* Alerta de Confirmação por E-mail */}
         {avisoConfirmacao ? (
           <div
             style={{
