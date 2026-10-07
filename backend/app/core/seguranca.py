@@ -81,8 +81,8 @@ def validar_token_jwt(token: str) -> Dict[str, Any]:
 
     token = token.strip()
 
-    # Suporte para testes automatizados rápidos
-    if token.startswith("test_") or os.getenv("TESTING") == "1":
+    # Suporte para mock tokens de teste rápido (ex: test_token)
+    if token.startswith("test_"):
         return {
             "id": "usuario_teste_123",
             "email": "teste@vektor.com",
