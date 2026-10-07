@@ -7,7 +7,7 @@
 > **Plataforma de Inteligência de Carreira com IA e Dados para Estudantes e Profissionais de Tecnologia**
 
 [![CI Pipeline](https://github.com/ogarctorres/job-matcher-/actions/workflows/ci.yml/badge.svg)](https://github.com/ogarctorres/job-matcher-/actions)
-[![Pytest Tests](https://img.shields.io/badge/Tests-88%20Passing-success?logo=pytest&logoColor=white)](https://github.com/ogarctorres/job-matcher-/actions)
+[![Pytest Tests](https://img.shields.io/badge/Tests-94%20Passing-success?logo=pytest&logoColor=white)](https://github.com/ogarctorres/job-matcher-/actions)
 [![Vercel Deploy](https://img.shields.io/badge/Frontend-Vercel_Live-black?logo=vercel&logoColor=white)](https://vektor-career.vercel.app)
 [![Render API](https://img.shields.io/badge/API-Render_Online-46E3B7?logo=render&logoColor=white)](https://vektor-0nam.onrender.com)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -44,11 +44,11 @@ O **Vektor** é uma aplicação Full Stack moderna que utiliza Inteligência Art
 
 ### Backend
 - **Linguagem**: Python 3.11+
-- **Framework Web**: FastAPI + Uvicorn (ASGI assíncrono)
+- **Framework Web**: FastAPI + Uvicorn (ASGI assíncrono com Lifespan moderno)
 - **Inteligência Artificial**: Google Gemini Flash API (`gemini-flash-latest` / `gemini-3.5-flash-lite`) com tolerância a falhas
-- **Banco de Dados**: SQLite + SQLAlchemy ORM
+- **Banco de Dados & Autenticação**: SQLite + SQLAlchemy ORM e Autenticação Nativa JWT (`pyjwt`, hashing PBKDF2)
 - **Processamento de Dados**: Pydantic v2, PyPDF, Requests
-- **Testes Automatizados**: Pytest, FastAPI TestClient (88 testes automatizados cobrindo ponta a ponta)
+- **Testes Automatizados**: Pytest, FastAPI TestClient (94 testes automatizados cobrindo ponta a ponta)
 
 ### Frontend
 - **Biblioteca**: React 19 + Vite
